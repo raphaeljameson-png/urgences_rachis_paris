@@ -2,197 +2,234 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Urgence Rachis — Évaluez votre situation | Espace Francilien du Rachis</title>
-<meta name="description" content="Douleur du dos ou du cou : évaluez en 2 minutes si votre situation nécessite une prise en charge rapide par un chirurgien du rachis.">
+<title>Urgence'Rachis — Évaluer le degré d'urgence de votre douleur du dos ou du cou</title>
+<meta name="description" content="Outil d'orientation des urgences du rachis : évaluez en quelques questions si votre douleur du dos ou du cou nécessite une prise en charge rapide. Créé par le Dr Raphaël Jameson, Espace Francilien du Rachis.">
+<meta name="theme-color" content="#0B1628">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     CHARTE — variables à ajuster avec les couleurs exactes
-     de rachis.paris (extraction CSS à faire en phase 2)
-     ============================================================ */
-  :root{
-    --bleu-profond:#16324f;   /* fond institutionnel */
-    --bleu-nuit:#0e2338;
-    --ecru:#f7f5f0;           /* fond de page */
-    --blanc:#ffffff;
-    --encre:#1d2530;          /* texte principal */
-    --gris:#5c6672;
-    --ligne:#e3ded4;
-    --accent:#2e7d6e;         /* vert médical — actions, liens */
-    --accent-fonce:#215c51;
-    --urgence:#b3261e;        /* rouge — réservé au niveau 1 */
-    --urgence-fond:#fdf1f0;
-    --attention:#8a5a00;
-    --attention-fond:#fdf6e8;
-    --radius:14px;
-    --ombre:0 10px 30px rgba(22,50,79,.10);
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    font-family:'Libre Franklin',system-ui,sans-serif;
-    background:var(--ecru);color:var(--encre);
-    line-height:1.55;font-size:16px;
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,.brand{font-family:'Lora',Georgia,serif}
+/* ============================================================
+   Urgence'Rachis — Design System "Precision Médicale" v2.0
+   Charte reprise d'Opti'CCAM (Dr R. Jameson)
+   ============================================================ */
+:root{
+  /* Palette navy-sky */
+  --navy-900:#050F1F; --navy-800:#0B1628; --navy-700:#112035;
+  --navy-600:#1A3050; --navy-400:#2E4D75; --navy-200:#6B8DB5;
+  --navy-100:#B0C4DB; --navy-50:#E8EEF5;
+  --sky-500:#38BDF8; --sky-400:#7DD3FC; --sky-100:#E0F2FE; --sky-50:#F0F9FF;
+  --emerald-600:#059669; --emerald-500:#10B981; --emerald-100:#D1FAE5; --emerald-50:#ECFDF5;
+  --amber-500:#F59E0B; --amber-100:#FEF3C7; --amber-50:#FFFBEB;
+  --rose-500:#F43F5E; --rose-100:#FFE4E6; --rose-50:#FFF1F2;
+  --slate-900:#0F172A; --slate-700:#334155; --slate-500:#64748B;
+  --slate-400:#94A3B8; --slate-300:#CBD5E1; --slate-200:#E2E8F0;
+  --slate-100:#F1F5F9; --slate-50:#F8FAFC;
+  /* Sémantique UI */
+  --color-bg:#F4F7FA; --color-surface:#FFFFFF;
+  --color-border:#E2E8F0; --color-border-soft:#EEF2F7;
+  --color-text-primary:#0F172A; --color-text-secondary:#475569; --color-text-muted:#94A3B8;
+  --color-accent:var(--sky-500);
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Mono','Fira Code',monospace;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-full:9999px;
+  --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--color-bg);font-family:var(--font-body);
+  color:var(--color-text-primary);line-height:1.6;font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
 
-  /* ---- Bandeau urgence permanent ---- */
-  .strip15{
-    background:var(--urgence);color:#fff;
-    text-align:center;padding:.55rem 1rem;
-    font-size:.9rem;font-weight:500;
-    position:sticky;top:0;z-index:50;
-  }
-  .strip15 a{color:#fff;font-weight:600;text-decoration:underline}
+/* ---- Bandeau 15 ---- */
+.strip15{background:var(--rose-500);color:#fff;text-align:center;padding:9px 16px;font-size:.86rem;font-weight:500;position:sticky;top:0;z-index:60}
+.strip15 a{color:#fff;font-weight:700;text-decoration:underline}
 
-  /* ---- En-tête ---- */
-  header{
-    background:var(--bleu-profond);color:#fff;
-    padding:1rem 1.25rem;
-  }
-  .head-inner{max-width:960px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-  .brand{font-size:1.15rem;font-weight:600;letter-spacing:.2px}
-  .brand small{display:block;font-family:'Libre Franklin';font-size:.72rem;font-weight:400;opacity:.75;letter-spacing:.4px;text-transform:uppercase;margin-top:2px}
-  .head-link{color:#cfe0d9;font-size:.85rem;text-decoration:none}
-  .head-link:hover{color:#fff}
+/* ---- Navbar ---- */
+.navbar{background:var(--navy-800);border-bottom:1px solid var(--navy-700)}
+.nav-inner{max-width:980px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:8px;color:#fff;font-weight:700;font-size:1.12rem;letter-spacing:.2px}
+.brand .apo{color:var(--sky-400)}
+.brand-sub{font-size:.7rem;font-weight:400;color:var(--navy-100);letter-spacing:.6px;text-transform:uppercase}
+.nav-link{color:var(--navy-100);font-size:.85rem;text-decoration:none;transition:color .2s var(--ease)}
+.nav-link:hover{color:#fff}
+.badge-beta{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:.7rem;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--sky-400);border:1px solid var(--navy-600);background:var(--navy-700);
+  border-radius:var(--radius-full);padding:3px 12px;
+}
+.badge-beta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sky-500);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
 
-  /* ---- Héros ---- */
-  .hero{max-width:960px;margin:0 auto;padding:2.25rem 1.25rem 1rem}
-  .hero h1{font-size:clamp(1.5rem,4.5vw,2.2rem);color:var(--bleu-profond);font-weight:600;max-width:34ch}
-  .hero p{margin-top:.6rem;color:var(--gris);max-width:60ch}
+/* ---- Héros ---- */
+.hero{background:linear-gradient(180deg,var(--navy-800) 0%,var(--navy-700) 100%);color:#fff;padding:44px 0 130px}
+.hero .wrap{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.hero h1{font-size:clamp(1.55rem,4.5vw,2.35rem);font-weight:700;line-height:1.2;max-width:22ch}
+.hero h1 em{font-style:normal;color:var(--sky-400)}
+.hero p{color:var(--navy-100);max-width:62ch;font-size:1.02rem}
+.hero .mini{font-size:.85rem;color:var(--navy-200)}
 
-  /* ---- Carte chatbot ---- */
-  .chat-wrap{max-width:960px;margin:1.5rem auto 0;padding:0 1.25rem}
-  .chat{
-    background:var(--blanc);border:1px solid var(--ligne);
-    border-radius:var(--radius);box-shadow:var(--ombre);
-    overflow:hidden;
-  }
-  .chat-head{
-    display:flex;align-items:center;gap:.7rem;
-    padding:.9rem 1.1rem;border-bottom:1px solid var(--ligne);
-    background:linear-gradient(180deg,#fff, #fbfaf7);
-  }
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(46,125,110,.15)}
-  .chat-head .t{font-size:.9rem;font-weight:600}
-  .chat-head .s{font-size:.75rem;color:var(--gris)}
-  .chat-body{padding:1.1rem;min-height:340px;display:flex;flex-direction:column;gap:.75rem}
-  .msg{max-width:85%;padding:.7rem .95rem;border-radius:12px;font-size:.95rem;animation:pop .25s ease}
-  .msg.bot{background:#eef2f0;border:1px solid #e2e9e5;border-bottom-left-radius:4px;align-self:flex-start}
-  .msg.user{background:var(--bleu-profond);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
-  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){.msg{animation:none}}
+/* ---- Carte chatbot (chevauche le héros) ---- */
+.chat-zone{margin-top:-96px;position:relative;z-index:5}
+.chat{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--color-border-soft);background:linear-gradient(180deg,#fff,var(--slate-50))}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--emerald-500);box-shadow:0 0 0 4px rgba(16,185,129,.16)}
+.chat-head .t{font-size:.92rem;font-weight:600}
+.chat-head .s{font-size:.76rem;color:var(--color-text-muted)}
+.chat-body{padding:18px;min-height:340px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:86%;padding:11px 15px;border-radius:var(--radius-lg);font-size:.94rem;animation:pop .25s var(--ease)}
+.msg.bot{background:var(--slate-100);border:1px solid var(--slate-200);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.user{background:var(--navy-800);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.msg,.exit{animation:none}}
+.choices{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0;align-self:flex-start}
+.choices button{
+  font-family:inherit;font-size:.9rem;font-weight:500;padding:9px 18px;
+  border-radius:var(--radius-full);cursor:pointer;background:#fff;color:var(--navy-600);
+  border:1.5px solid var(--sky-500);transition:background var(--ease) .15s,color .15s;
+}
+.choices button:hover,.choices button:focus-visible{background:var(--sky-500);color:#fff;outline:none;box-shadow:0 0 0 3px rgba(56,189,248,.22)}
 
-  .choices{display:flex;flex-wrap:wrap;gap:.5rem;padding:.4rem 0 .2rem;align-self:flex-start}
-  .choices button{
-    font-family:inherit;font-size:.92rem;font-weight:500;
-    padding:.6rem 1.05rem;border-radius:999px;cursor:pointer;
-    background:#fff;color:var(--accent-fonce);
-    border:1.5px solid var(--accent);transition:background .15s,color .15s;
-  }
-  .choices button:hover,.choices button:focus-visible{background:var(--accent);color:#fff;outline:none}
-  .choices button:focus-visible{box-shadow:0 0 0 3px rgba(46,125,110,.3)}
+/* ---- Cartes de sortie ---- */
+.exit{border-radius:var(--radius-lg);padding:16px 18px;font-size:.94rem;align-self:stretch;animation:pop .3s var(--ease)}
+.exit h3{font-size:1.03rem;margin-bottom:6px;font-weight:700}
+.exit p{margin:5px 0}
+.exit.n1{background:var(--rose-50);border:1.5px solid var(--rose-500)}
+.exit.n1 h3{color:var(--rose-500)}
+.exit.n2{background:var(--amber-50);border:1.5px solid var(--amber-500)}
+.exit.n2 h3{color:#92600A}
+.exit.n3{background:var(--emerald-50);border:1.5px solid var(--emerald-500)}
+.exit.n3 h3{color:var(--emerald-600)}
+.exit.n4{background:var(--slate-100);border:1.5px solid var(--slate-300)}
+.exit.n4 h3{color:var(--navy-600)}
+.exit .cta{display:inline-block;margin-top:10px;padding:10px 20px;border-radius:var(--radius-full);text-decoration:none;font-weight:600;font-size:.9rem;transition:filter .15s}
+.exit .cta:hover{filter:brightness(1.08)}
+.exit.n1 .cta{background:var(--rose-500);color:#fff}
+.exit.n2 .cta{background:var(--amber-500);color:#fff}
+.exit.n3 .cta{background:var(--emerald-500);color:#fff}
+.exit.n4 .cta{background:var(--navy-800);color:#fff}
+.exit .note{font-size:.8rem;color:var(--color-text-secondary);margin-top:9px}
+.restart{margin-top:6px;align-self:flex-start;background:none;border:none;color:var(--color-text-muted);font-size:.82rem;text-decoration:underline;cursor:pointer;font-family:inherit}
 
-  /* ---- Cartes de sortie ---- */
-  .exit{border-radius:12px;padding:1rem 1.1rem;font-size:.95rem;align-self:stretch;animation:pop .3s ease}
-  .exit h3{font-size:1.02rem;margin-bottom:.35rem}
-  .exit p{margin:.3rem 0}
-  .exit.n1{background:var(--urgence-fond);border:1.5px solid var(--urgence)}
-  .exit.n1 h3{color:var(--urgence)}
-  .exit.n2{background:var(--attention-fond);border:1.5px solid #d9a441}
-  .exit.n2 h3{color:var(--attention)}
-  .exit.n3{background:#eef5f3;border:1.5px solid var(--accent)}
-  .exit.n3 h3{color:var(--accent-fonce)}
-  .exit.n4{background:#f1f3f6;border:1.5px solid #c6cdd6}
-  .exit.n4 h3{color:var(--bleu-profond)}
-  .exit .cta{
-    display:inline-block;margin-top:.6rem;padding:.65rem 1.2rem;
-    border-radius:999px;text-decoration:none;font-weight:600;font-size:.92rem;
-  }
-  .exit.n1 .cta{background:var(--urgence);color:#fff}
-  .exit.n2 .cta,.exit.n3 .cta{background:var(--accent);color:#fff}
-  .exit.n4 .cta{background:var(--bleu-profond);color:#fff}
-  .exit .note{font-size:.82rem;color:var(--gris);margin-top:.55rem}
-  .restart{
-    margin-top:.4rem;align-self:flex-start;
-    background:none;border:none;color:var(--gris);
-    font-size:.82rem;text-decoration:underline;cursor:pointer;font-family:inherit;
-  }
+/* ---- Sections ---- */
+section{padding:46px 0 0}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--sky-500);margin-bottom:8px}
+h2{font-size:1.35rem;font-weight:700;color:var(--navy-800);margin-bottom:14px}
+.lead{color:var(--color-text-secondary);max-width:70ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:18px}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm)}
+.card .num{font-family:var(--font-mono);font-size:.78rem;color:var(--sky-500);margin-bottom:6px}
+.card h3{font-size:.98rem;font-weight:600;color:var(--navy-800);margin-bottom:6px}
+.card p{font-size:.88rem;color:var(--color-text-secondary)}
 
-  /* ---- Sections basses ---- */
-  .why{max-width:960px;margin:2.5rem auto 0;padding:0 1.25rem}
-  .why h2{color:var(--bleu-profond);font-size:1.3rem;margin-bottom:.9rem}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.9rem}
-  .card{background:var(--blanc);border:1px solid var(--ligne);border-radius:var(--radius);padding:1.05rem 1.1rem}
-  .card h3{font-size:1rem;color:var(--bleu-profond);margin-bottom:.35rem}
-  .card p{font-size:.9rem;color:var(--gris)}
+/* ---- Encadré doute / 15 ---- */
+.callout{
+  margin-top:26px;background:var(--rose-50);border:1.5px solid var(--rose-500);
+  border-radius:var(--radius-lg);padding:18px 20px;
+}
+.callout h3{color:var(--rose-500);font-size:1rem;font-weight:700;margin-bottom:6px}
+.callout p{font-size:.92rem;color:var(--slate-700)}
 
-  .team{max-width:960px;margin:2.25rem auto 0;padding:0 1.25rem}
-  .team h2{color:var(--bleu-profond);font-size:1.3rem;margin-bottom:.4rem}
-  .team p{color:var(--gris);font-size:.95rem;max-width:65ch}
+/* ---- À propos / données ---- */
+.about{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:18px}
+.about h3{font-size:1rem;font-weight:700;color:var(--navy-800);margin-bottom:8px}
+.about p{font-size:.9rem;color:var(--color-text-secondary)}
+.about a{color:var(--sky-500);font-weight:500}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:.72rem;background:var(--emerald-50);color:var(--emerald-600);border:1px solid var(--emerald-100);border-radius:var(--radius-full);padding:3px 10px;margin:3px 4px 0 0}
 
-  footer{
-    margin-top:3rem;background:var(--bleu-nuit);color:#b9c4ce;
-    padding:1.6rem 1.25rem 2rem;font-size:.82rem;
-  }
-  .foot-inner{max-width:960px;margin:0 auto}
-  footer a{color:#dce6ee}
-  .proto{display:inline-block;margin-bottom:.7rem;padding:.2rem .6rem;border:1px solid #3d5266;border-radius:6px;font-size:.72rem;letter-spacing:.5px;text-transform:uppercase}
+/* ---- Footer ---- */
+footer{margin-top:52px;background:var(--navy-900);color:var(--navy-100);padding:26px 0 34px;font-size:.82rem}
+footer .wrap{display:flex;flex-direction:column;gap:10px}
+footer a{color:var(--sky-400)}
+.foot-badge{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.8px;text-transform:uppercase;color:var(--navy-200);border:1px solid var(--navy-600);border-radius:var(--radius-sm);padding:3px 9px;width:fit-content}
 </style>
 </head>
 <body>
 
 <div class="strip15" role="alert">
-  Perte de contrôle des urines, paralysie brutale, fièvre avec douleur du dos&nbsp;: <a href="tel:15">appelez le 15</a> sans attendre.
+  Au moindre doute&nbsp;: rendez-vous aux urgences les plus proches de votre domicile ou <a href="tel:15">appelez le 15</a>.
 </div>
 
-<header>
-  <div class="head-inner">
-    <div class="brand">Urgence Rachis<small>Espace Francilien du Rachis</small></div>
-    <a class="head-link" href="https://rachis.paris" rel="noopener">Site principal — rachis.paris →</a>
+<nav class="navbar">
+  <div class="nav-inner">
+    <div>
+      <div class="brand">Urgence<span class="apo">'</span>Rachis</div>
+      <div class="brand-sub">Espace Francilien du Rachis</div>
+    </div>
+    <span class="badge-beta">Version d'essai</span>
+    <a class="nav-link" href="https://rachis.paris" rel="noopener">rachis.paris →</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Douleur du dos ou du cou&nbsp;: <em>quel est votre degré d'urgence&nbsp;?</em></h1>
+    <p>Cet espace a un objectif simple&nbsp;: essayer d'améliorer l'orientation des patients en aidant à déterminer le degré d'urgence d'une douleur du rachis — et, quand une prise en charge rapide est justifiée, faciliter la mise en relation avec un chirurgien de l'équipe.</p>
+    <p class="mini">Version d'essai — cet outil n'a pas vocation à se substituer à un médecin. Au moindre doute, rendez-vous aux urgences proches de votre domicile ou appelez le&nbsp;15.</p>
   </div>
 </header>
 
-<section class="hero">
-  <h1>Votre dos ou votre cou nécessite-t-il une prise en charge rapide&nbsp;?</h1>
-  <p>Répondez à quelques questions&nbsp;: nous vous orientons vers le bon circuit — urgences, consultation sous 24&nbsp;h avec un chirurgien du rachis, rendez-vous rapide, ou suivi classique. Anonyme, sans inscription, aucune donnée conservée.</p>
-</section>
-
-<div class="chat-wrap">
+<div class="wrap chat-zone">
   <div class="chat" aria-live="polite">
     <div class="chat-head">
       <span class="dot" aria-hidden="true"></span>
       <div>
         <div class="t">Assistant d'orientation</div>
-        <div class="s">Ne remplace pas un avis médical</div>
+        <div class="s">Anonyme · Ne remplace pas un avis médical</div>
       </div>
     </div>
     <div class="chat-body" id="chat"></div>
   </div>
 </div>
 
-<section class="why">
-  <h2>Pourquoi ne pas attendre&nbsp;?</h2>
-  <div class="cards">
-    <div class="card"><h3>Certains signes n'attendent pas</h3><p>Une perte de force, des troubles urinaires ou une fièvre associée à une douleur du rachis imposent une prise en charge immédiate ou très rapide.</p></div>
-    <div class="card"><h3>Des créneaux réservés</h3><p>L'équipe garde des consultations dédiées aux situations urgentes, non visibles sur Doctolib public, accessibles uniquement après cette évaluation.</p></div>
-    <div class="card"><h3>Une IRM organisée vite</h3><p>Quand elle est justifiée, l'imagerie est programmée rapidement pour ne pas retarder la décision thérapeutique.</p></div>
+<section>
+  <div class="wrap">
+    <div class="eyebrow">L'objectif</div>
+    <h2>Mieux orienter, plus vite</h2>
+    <p class="lead">Face à une douleur du dos ou du cou, il est difficile de savoir s'il faut consulter en urgence, rapidement, ou simplement prendre rendez-vous. Cet outil pose les bonnes questions, dans le bon ordre, pour proposer le circuit adapté.</p>
+    <div class="cards">
+      <div class="card"><div class="num">01</div><h3>Évaluer</h3><p>Quelques questions ciblées recherchent les signes qui déterminent le degré d'urgence de votre situation.</p></div>
+      <div class="card"><div class="num">02</div><h3>Orienter</h3><p>Selon vos réponses&nbsp;: urgences immédiates, consultation sous 24&nbsp;h, rendez-vous rapide sous 48-72&nbsp;h, ou suivi classique.</p></div>
+      <div class="card"><div class="num">03</div><h3>Mettre en relation</h3><p>Si un avis chirurgical rapide est justifié, vous accédez à des créneaux dédiés avec un chirurgien du rachis de l'équipe.</p></div>
+    </div>
+    <div class="callout">
+      <h3>⚠️ Au moindre doute</h3>
+      <p>Cet outil est une <strong>version d'essai</strong> et n'a pas vocation à se substituer à un médecin. En cas de doute sur votre état, quel que soit le résultat de l'évaluation, rendez-vous <strong>aux urgences les plus proches de votre domicile</strong> ou <strong>appelez le 15</strong> (SAMU), disponible 24h/24.</p>
+    </div>
   </div>
 </section>
 
-<section class="team">
-  <h2>L'équipe</h2>
-  <p>Chirurgiens du rachis de l'Espace Francilien du Rachis&nbsp;: Dr&nbsp;Mayalen&nbsp;Lamerain, Dr&nbsp;Raphaël&nbsp;Jameson et Dr&nbsp;Christophe&nbsp;Travert. Pour toute situation non urgente&nbsp;: <a href="https://rachis.paris" rel="noopener">rachis.paris</a>.</p>
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Transparence</div>
+    <h2>Qui sommes-nous, et vos données</h2>
+    <div class="about">
+      <div>
+        <h3>Un espace créé par un chirurgien du rachis</h3>
+        <p>Cet espace est créé par le <strong>Dr Raphaël Jameson</strong>, chirurgien orthopédiste spécialiste du rachis, membre de l'<strong>Espace Francilien du Rachis</strong>. Pour l'information complète sur les pathologies de la colonne vertébrale et l'équipe&nbsp;: <a href="https://rachis.paris" rel="noopener">rachis.paris</a>.</p>
+      </div>
+      <div>
+        <h3>Aucune donnée médicale collectée</h3>
+        <p>Vos réponses au questionnaire sont <strong>anonymes et ne sont ni enregistrées ni transmises</strong>. Aucune donnée médicale n'est collectée sur ce site — en dehors des messages que vous pouvez choisir d'envoyer directement à un praticien pour planifier une éventuelle prise de rendez-vous.</p>
+        <span class="pill">Anonyme</span><span class="pill">Sans inscription</span><span class="pill">Aucun stockage</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <footer>
-  <div class="foot-inner">
-    <span class="proto">Prototype — v1 en cours de validation médicale</span>
-    <p>Cet outil d'orientation ne constitue pas un avis médical et ne remplace ni une consultation ni un appel au 15 en cas d'urgence. Les échanges sont anonymes et ne sont pas enregistrés. — <a href="https://rachis.paris" rel="noopener">rachis.paris</a></p>
+  <div class="wrap">
+    <span class="foot-badge">Version d'essai — en cours de validation médicale</span>
+    <p>Urgence'Rachis est un outil d'orientation. Il ne constitue pas un avis médical, ne pose aucun diagnostic et ne remplace ni une consultation, ni un appel au 15 en cas d'urgence. Au moindre doute, rendez-vous aux urgences les plus proches de votre domicile.</p>
+    <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris" rel="noopener">rachis.paris</a></p>
   </div>
 </footer>
 
@@ -206,13 +243,12 @@ const LINKS = {
   site:    "https://rachis.paris"
 };
 
-/* Aggravation : rappel affiché sous chaque sortie consultation */
 const LOCK = "Si apparaissent d'ici là une fièvre, une perte de force, des troubles urinaires ou une paralysie&nbsp;: appelez le 15 sans attendre.";
 
 const chat = document.getElementById("chat");
-function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;chat.appendChild(d);scroll();}
-function user(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;chat.appendChild(d);scroll();}
-function scroll(){chat.parentElement.scrollTop=chat.parentElement.scrollHeight;window.scrollBy({top:0});}
+function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;chat.appendChild(d);scrollChat();}
+function user(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;chat.appendChild(d);scrollChat();}
+function scrollChat(){chat.parentElement.scrollTop=chat.parentElement.scrollHeight;}
 function ask(text,options){
   bot(text);
   const w=document.createElement("div");w.className="choices";
@@ -221,7 +257,7 @@ function ask(text,options){
     b.onclick=()=>{w.remove();user(label);setTimeout(next,350);};
     w.appendChild(b);
   });
-  chat.appendChild(w);scroll();
+  chat.appendChild(w);scrollChat();
 }
 function exitCard(cls,title,body,cta){
   const d=document.createElement("div");d.className="exit "+cls;
@@ -230,18 +266,18 @@ function exitCard(cls,title,body,cta){
   chat.appendChild(d);
   const r=document.createElement("button");r.className="restart";r.textContent="↻ Recommencer l'évaluation";
   r.onclick=()=>{chat.innerHTML="";start();};
-  chat.appendChild(r);scroll();
+  chat.appendChild(r);scrollChat();
 }
 
 /* ============================ SORTIES ============================ */
 function sortie15(){
   exitCard("n1","⚠️ Appelez le 15 maintenant",
-  `<p>Les signes que vous décrivez nécessitent une prise en charge médicale <strong>immédiate</strong>, sans attendre un rendez-vous. Appelez le <strong>15 (SAMU)</strong> ou rendez-vous au service d'urgences le plus proche. N'attendez pas que les symptômes s'aggravent.</p>`,
+  `<p>Les signes que vous décrivez nécessitent une prise en charge médicale <strong>immédiate</strong>, sans attendre un rendez-vous. Appelez le <strong>15 (SAMU)</strong> ou rendez-vous au service d'urgences le plus proche de votre domicile. N'attendez pas que les symptômes s'aggravent.</p>`,
   {href:"tel:15",label:"📞 Appeler le 15"});
 }
 function sortieUrgences(motif){
   exitCard("n1","Rendez-vous aux urgences",
-  `<p>${motif} Rendez-vous au <strong>service d'urgences</strong> le plus proche, ou appelez le 15 si vous ne pouvez pas vous déplacer. Cette situation n'est pas prise en charge en consultation.</p>`,
+  `<p>${motif} Rendez-vous au <strong>service d'urgences</strong> le plus proche de votre domicile, ou appelez le 15 si vous ne pouvez pas vous déplacer. Cette situation n'est pas prise en charge en consultation.</p>`,
   {href:"tel:15",label:"📞 Appeler le 15"});
 }
 function sortie24h(motif,extra=""){
@@ -282,7 +318,6 @@ function start(){
   bot(`Bonjour, je suis l'assistant d'orientation de l'<strong>Espace Francilien du Rachis</strong>. Je vais vous poser quelques questions pour évaluer si votre situation nécessite une prise en charge rapide. Je ne remplace pas un avis médical&nbsp;— en cas de détresse immédiate, appelez le&nbsp;15.`);
   setTimeout(qSphincter,500);
 }
-
 function qSphincter(){
   ask(`Depuis peu, avez-vous des <strong>difficultés à uriner ou à vous retenir</strong>, ou une <strong>perte de sensibilité entre les jambes</strong> ou au niveau du siège&nbsp;?`,
   [["Oui",sortie15],["Non",qFievre]]);
