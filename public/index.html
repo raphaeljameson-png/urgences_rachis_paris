@@ -320,6 +320,8 @@ const LINKS = {
   rdv72h:  "https://www.doctolib.fr/#LIEN-CACHE-CRENEAUX-48-72H",
   site:    "https://rachis.paris"
 };
+/* Adresse de réception des rapports envoyés PAR le patient (à définir) */
+const CONTACT_EMAIL = "secretariat@rachis.paris"; /* PLACEHOLDER — à remplacer */
 const LOCK = "Si apparaissent d'ici là une fièvre, une perte de force, des troubles urinaires ou une paralysie&nbsp;: appelez le 15 sans attendre.";
 
 /* =====================================================================
@@ -363,6 +365,8 @@ function exitCard(cls,title,body,ctas){
   (ctas||[]).forEach(c=>{
     if(c.pdf){
       const b=document.createElement("button");b.className="cta pdf";b.textContent=c.label;b.onclick=makePDF;d.appendChild(b);
+    }else if(c.share){
+      const b=document.createElement("button");b.className="cta pdf";b.textContent=c.label;b.onclick=sharePDF;d.appendChild(b);
     }else{
       const a=document.createElement("a");a.className="cta";a.href=c.href;a.rel="noopener";a.textContent=c.label;d.appendChild(a);
     }
@@ -394,17 +398,17 @@ function sortie24h(motif,extra=""){
   exitCard("n2","Consultation sous 24 heures",
   `<p>${motif} L'équipe réserve des créneaux dédiés à ces situations, non visibles sur Doctolib public.</p>
    ${extra}
-   <p>Vous pouvez télécharger votre <strong>rapport PDF</strong> ci-dessous et le joindre à votre demande de rendez-vous sur Doctolib, ou l'envoyer par email au praticien&nbsp;: il l'aura lu avant de vous voir.</p>
+   <p>Votre <strong>rapport PDF</strong> peut être envoyé au praticien en un geste (bouton « Envoyer ») ou téléchargé pour le joindre à votre demande Doctolib&nbsp;: il l'aura lu avant de vous voir.</p>
    <p class="note">${LOCK}</p>`,
-  [{href:LINKS.rdv24h,label:"Réserver un créneau sous 24 h"},{pdf:true,label:"📄 Télécharger mon rapport PDF"}]);
+  [{href:LINKS.rdv24h,label:"Réserver un créneau sous 24 h"},{share:true,label:"📤 Envoyer mon rapport au praticien"},{pdf:true,label:"📄 Télécharger le PDF"}]);
 }
 function sortie72h(motif,extra=""){
   S.orientation="Consultation rapide (48 à 72 heures)";S.detail=motif.replace(/<[^>]+>/g,"");
   exitCard("n3","Consultation rapide (48 à 72 h)",
   `<p>${motif}</p>${extra}
-   <p>Vous pouvez télécharger votre <strong>rapport PDF</strong> ci-dessous et le joindre à votre demande de rendez-vous sur Doctolib, ou l'envoyer par email au praticien.</p>
+   <p>Votre <strong>rapport PDF</strong> peut être envoyé au praticien en un geste (bouton « Envoyer ») ou téléchargé pour le joindre à votre demande Doctolib.</p>
    <p class="note">${LOCK}</p>`,
-  [{href:LINKS.rdv72h,label:"Réserver un créneau rapide"},{pdf:true,label:"📄 Télécharger mon rapport PDF"}]);
+  [{href:LINKS.rdv72h,label:"Réserver un créneau rapide"},{share:true,label:"📤 Envoyer mon rapport au praticien"},{pdf:true,label:"📄 Télécharger le PDF"}]);
 }
 function sortie4(){
   S.orientation="Pas de signe d'urgence identifié — suivi classique";S.detail="";
@@ -555,7 +559,7 @@ function qCancerDouleur(){
 /* =====================================================================
    RAPPORT PDF — généré localement dans le navigateur (aucune transmission)
    ===================================================================== */
-function makePDF(){
+function buildPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({unit:"mm",format:"a4"});
   const W=210, M=18; let y=20;
@@ -589,7 +593,30 @@ function makePDF(){
   line(S.signes.length? S.signes.map(s=>"• "+dico[s]).join("\n") : "Aucun signe d'alarme coché",{gap:6});
   doc.setDrawColor(226,232,240); doc.line(M,y,W-M,y); y+=6;
   line("Ce rapport a été généré automatiquement par l'outil d'orientation Urgence'Rachis à partir des déclarations du patient. Il ne constitue pas un avis médical ni un diagnostic. Il est destiné à être transmis par le patient lui-même au praticien de son choix (message Doctolib ou email) pour préparer une consultation. En cas d'aggravation ou de doute : appeler le 15.",{size:8.5,color:[100,116,139]});
+  return doc;
+}
+function makePDF(){ buildPDF().save("urgence-rachis-rapport.pdf"); }
+
+/* Envoi PAR LE PATIENT : partage natif mobile (PDF joint) ou repli email */
+async function sharePDF(){
+  const doc = buildPDF();
+  const blob = doc.output("blob");
+  const file = new File([blob],"urgence-rachis-rapport.pdf",{type:"application/pdf"});
+  const shareData = {
+    files:[file],
+    title:"Rapport Urgence'Rachis",
+    text:"Bonjour, je vous adresse mon rapport d'orientation Urgence'Rachis en pièce jointe, en vue d'une prise de rendez-vous."
+  };
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share(shareData); return; }
+    catch(e){ if(e.name==="AbortError") return; /* annulé par le patient */ }
+  }
+  /* Repli (ordinateur) : téléchargement + email pré-rempli, pièce jointe manuelle */
   doc.save("urgence-rachis-rapport.pdf");
+  bot(`Le fichier <strong>urgence-rachis-rapport.pdf</strong> vient d'être téléchargé sur votre appareil. Votre messagerie va s'ouvrir avec un message pré-rempli&nbsp;: <strong>joignez-y le fichier téléchargé</strong> (trombone / « Joindre un fichier »), puis envoyez.`);
+  const subject=encodeURIComponent("Demande de rendez-vous — rapport Urgence'Rachis");
+  const body=encodeURIComponent("Bonjour,\n\nJe vous adresse en pièce jointe mon rapport d'orientation Urgence'Rachis (fichier : urgence-rachis-rapport.pdf, téléchargé sur mon appareil), en vue d'une prise de rendez-vous.\n\nOrientation proposée : "+(S.orientation||"—")+"\n\nCordialement");
+  setTimeout(()=>{ window.location.href=`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`; },900);
 }
 
 start();
