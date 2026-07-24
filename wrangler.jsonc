@@ -1,0 +1,10 @@
+{
+  // Configuration Cloudflare Worker — site statique Urgence'Rachis
+  // Le déploiement « npx wrangler deploy » sert le contenu du dossier ./public
+  "name": "urgences-rachis-paris",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
+}
