@@ -1,7 +1,7 @@
 # Urgence Rachis — urgence-rachis.fr (prototype)
 
 Site d'orientation des urgences du rachis — **Espace Francilien du Rachis**
-(Dr Lamerain, Dr Jameson, Dr Travert, Dr Arvieu).
+(Dr Lamerain, Dr Jameson, Dr Travert).
 
 Le site trie les patients selon des règles médicales validées et les oriente vers :
 le 15 / les urgences, une consultation sous 24 h (créneaux Doctolib cachés),
@@ -15,6 +15,7 @@ une consultation rapide 48–72 h, ou le site principal [rachis.paris](https://r
   « traitement bien conduit », critère hyperalgique, place de l'IRM déjà faite)
 - ⏳ Liens Doctolib cachés à créer et à renseigner dans `LINKS` en tête du `<script>`
 - ⏳ Charte graphique : variables CSS `:root` à aligner sur les couleurs exactes de rachis.paris
+- ⏳ Composition affichée de l'équipe à confirmer
 
 ## Règles de triage validées (passe 1)
 
@@ -59,3 +60,5 @@ Cloudflare Pages branché sur ce dépôt (branche `main`) → republication auto
 - Remplacer les liens Doctolib placeholder
 - Valider la passe 2 des critères de triage
 - Compléter mentions légales + RGPD
+- Confirmer la composition de l'équipe affichée sur le site
+</br>
