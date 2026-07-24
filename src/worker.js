@@ -75,8 +75,20 @@ Codes motif possibles : sphincter, fievre, paralysie_urgences, paralysie_jour_me
 La "synthese" apparaîtra uniquement dans le rapport PDF du patient, jamais à l'écran.`;
 }
 
+async function hashIp(ip) {
+  // IP jamais stockée en clair : hachage SHA-256 salé, rotation mensuelle du sel
+  const salt = "urgence-rachis-" + new Date().toISOString().slice(0, 7);
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ip));
+  return [...new Uint8Array(buf)].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+const STAT_EVENTS = new Set(["start","region_cervical","region_lombaire","ia_start",
+  "sortie_15","sortie_urgences","sortie_24h","sortie_72h","sortie_mt","sortie_suivi",
+  "pdf","envoi"]);
+
 async function rateLimit(env, ip) {
-  const key = `ip:${new Date().toISOString().slice(0, 10)}:${ip}`;
+  const h = await hashIp(ip);
+  const key = `ip:${new Date().toISOString().slice(0, 10)}:${h}`;
   const n = parseInt((await env.URGENCE_KV.get(key)) || "0", 10);
   if (n >= DAILY_IP_LIMIT) return false;
   await env.URGENCE_KV.put(key, String(n + 1), { expirationTtl: 90000 });
@@ -104,6 +116,35 @@ export default {
 
     if (url.pathname === "/api/now") {
       return Response.json(parisNow());
+    }
+
+    // Statistiques anonymes agrégées : simples compteurs mensuels, aucune donnée individuelle
+    if (url.pathname === "/api/stat" && request.method === "POST") {
+      try {
+        const { event } = await request.json();
+        if (STAT_EVENTS.has(event)) {
+          const key = `stat:${new Date().toISOString().slice(0, 7)}:${event}`;
+          const n = parseInt((await env.URGENCE_KV.get(key)) || "0", 10);
+          await env.URGENCE_KV.put(key, String(n + 1), { expirationTtl: 34560000 });
+        }
+      } catch (e) {}
+      return new Response(null, { status: 204 });
+    }
+
+    // Consultation des statistiques (protégée par clé : ?key=... = valeur du secret STATS_KEY)
+    if (url.pathname === "/api/stats") {
+      if (!env.STATS_KEY || url.searchParams.get("key") !== env.STATS_KEY) {
+        return new Response("Not found", { status: 404 });
+      }
+      const month = url.searchParams.get("mois") || new Date().toISOString().slice(0, 7);
+      const out = { mois: month };
+      for (const ev of STAT_EVENTS) {
+        out[ev] = parseInt((await env.URGENCE_KV.get(`stat:${month}:${ev}`)) || "0", 10);
+      }
+      const spend = parseFloat((await env.URGENCE_KV.get(`spend:${month}`)) || "0");
+      out.depense_api_usd = Math.round(spend * 100) / 100;
+      out.modele_actuel = spend >= SPEND_LIMIT_EUR * USD_PER_EUR ? MODEL_FALLBACK : MODEL_PRIMARY;
+      return Response.json(out);
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
