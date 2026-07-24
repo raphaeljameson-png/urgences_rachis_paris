@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Urgence Rachis — Évaluez votre situation | Espace Francilien du Rachis</title>
+<meta name="description" content="Douleur du dos ou du cou : évaluez en 2 minutes si votre situation nécessite une prise en charge rapide par un chirurgien du rachis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     CHARTE — variables à ajuster avec les couleurs exactes
+     de rachis.paris (extraction CSS à faire en phase 2)
+     ============================================================ */
+  :root{
+    --bleu-profond:#16324f;   /* fond institutionnel */
+    --bleu-nuit:#0e2338;
+    --ecru:#f7f5f0;           /* fond de page */
+    --blanc:#ffffff;
+    --encre:#1d2530;          /* texte principal */
+    --gris:#5c6672;
+    --ligne:#e3ded4;
+    --accent:#2e7d6e;         /* vert médical — actions, liens */
+    --accent-fonce:#215c51;
+    --urgence:#b3261e;        /* rouge — réservé au niveau 1 */
+    --urgence-fond:#fdf1f0;
+    --attention:#8a5a00;
+    --attention-fond:#fdf6e8;
+    --radius:14px;
+    --ombre:0 10px 30px rgba(22,50,79,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Libre Franklin',system-ui,sans-serif;
+    background:var(--ecru);color:var(--encre);
+    line-height:1.55;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brand{font-family:'Lora',Georgia,serif}
+
+  /* ---- Bandeau urgence permanent ---- */
+  .strip15{
+    background:var(--urgence);color:#fff;
+    text-align:center;padding:.55rem 1rem;
+    font-size:.9rem;font-weight:500;
+    position:sticky;top:0;z-index:50;
+  }
+  .strip15 a{color:#fff;font-weight:600;text-decoration:underline}
+
+  /* ---- En-tête ---- */
+  header{
+    background:var(--bleu-profond);color:#fff;
+    padding:1rem 1.25rem;
+  }
+  .head-inner{max-width:960px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+  .brand{font-size:1.15rem;font-weight:600;letter-spacing:.2px}
+  .brand small{display:block;font-family:'Libre Franklin';font-size:.72rem;font-weight:400;opacity:.75;letter-spacing:.4px;text-transform:uppercase;margin-top:2px}
+  .head-link{color:#cfe0d9;font-size:.85rem;text-decoration:none}
+  .head-link:hover{color:#fff}
+
+  /* ---- Héros ---- */
+  .hero{max-width:960px;margin:0 auto;padding:2.25rem 1.25rem 1rem}
+  .hero h1{font-size:clamp(1.5rem,4.5vw,2.2rem);color:var(--bleu-profond);font-weight:600;max-width:34ch}
+  .hero p{margin-top:.6rem;color:var(--gris);max-width:60ch}
+
+  /* ---- Carte chatbot ---- */
+  .chat-wrap{max-width:960px;margin:1.5rem auto 0;padding:0 1.25rem}
+  .chat{
+    background:var(--blanc);border:1px solid var(--ligne);
+    border-radius:var(--radius);box-shadow:var(--ombre);
+    overflow:hidden;
+  }
+  .chat-head{
+    display:flex;align-items:center;gap:.7rem;
+    padding:.9rem 1.1rem;border-bottom:1px solid var(--ligne);
+    background:linear-gradient(180deg,#fff, #fbfaf7);
+  }
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(46,125,110,.15)}
+  .chat-head .t{font-size:.9rem;font-weight:600}
+  .chat-head .s{font-size:.75rem;color:var(--gris)}
+  .chat-body{padding:1.1rem;min-height:340px;display:flex;flex-direction:column;gap:.75rem}
+  .msg{max-width:85%;padding:.7rem .95rem;border-radius:12px;font-size:.95rem;animation:pop .25s ease}
+  .msg.bot{background:#eef2f0;border:1px solid #e2e9e5;border-bottom-left-radius:4px;align-self:flex-start}
+  .msg.user{background:var(--bleu-profond);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.msg{animation:none}}
+
+  .choices{display:flex;flex-wrap:wrap;gap:.5rem;padding:.4rem 0 .2rem;align-self:flex-start}
+  .choices button{
+    font-family:inherit;font-size:.92rem;font-weight:500;
+    padding:.6rem 1.05rem;border-radius:999px;cursor:pointer;
+    background:#fff;color:var(--accent-fonce);
+    border:1.5px solid var(--accent);transition:background .15s,color .15s;
+  }
+  .choices button:hover,.choices button:focus-visible{background:var(--accent);color:#fff;outline:none}
+  .choices button:focus-visible{box-shadow:0 0 0 3px rgba(46,125,110,.3)}
+
+  /* ---- Cartes de sortie ---- */
+  .exit{border-radius:12px;padding:1rem 1.1rem;font-size:.95rem;align-self:stretch;animation:pop .3s ease}
+  .exit h3{font-size:1.02rem;margin-bottom:.35rem}
+  .exit p{margin:.3rem 0}
+  .exit.n1{background:var(--urgence-fond);border:1.5px solid var(--urgence)}
+  .exit.n1 h3{color:var(--urgence)}
+  .exit.n2{background:var(--attention-fond);border:1.5px solid #d9a441}
+  .exit.n2 h3{color:var(--attention)}
+  .exit.n3{background:#eef5f3;border:1.5px solid var(--accent)}
+  .exit.n3 h3{color:var(--accent-fonce)}
+  .exit.n4{background:#f1f3f6;border:1.5px solid #c6cdd6}
+  .exit.n4 h3{color:var(--bleu-profond)}
+  .exit .cta{
+    display:inline-block;margin-top:.6rem;padding:.65rem 1.2rem;
+    border-radius:999px;text-decoration:none;font-weight:600;font-size:.92rem;
+  }
+  .exit.n1 .cta{background:var(--urgence);color:#fff}
+  .exit.n2 .cta,.exit.n3 .cta{background:var(--accent);color:#fff}
+  .exit.n4 .cta{background:var(--bleu-profond);color:#fff}
+  .exit .note{font-size:.82rem;color:var(--gris);margin-top:.55rem}
+  .restart{
+    margin-top:.4rem;align-self:flex-start;
+    background:none;border:none;color:var(--gris);
+    font-size:.82rem;text-decoration:underline;cursor:pointer;font-family:inherit;
+  }
+
+  /* ---- Sections basses ---- */
+  .why{max-width:960px;margin:2.5rem auto 0;padding:0 1.25rem}
+  .why h2{color:var(--bleu-profond);font-size:1.3rem;margin-bottom:.9rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.9rem}
+  .card{background:var(--blanc);border:1px solid var(--ligne);border-radius:var(--radius);padding:1.05rem 1.1rem}
+  .card h3{font-size:1rem;color:var(--bleu-profond);margin-bottom:.35rem}
+  .card p{font-size:.9rem;color:var(--gris)}
+
+  .team{max-width:960px;margin:2.25rem auto 0;padding:0 1.25rem}
+  .team h2{color:var(--bleu-profond);font-size:1.3rem;margin-bottom:.4rem}
+  .team p{color:var(--gris);font-size:.95rem;max-width:65ch}
+
+  footer{
+    margin-top:3rem;background:var(--bleu-nuit);color:#b9c4ce;
+    padding:1.6rem 1.25rem 2rem;font-size:.82rem;
+  }
+  .foot-inner{max-width:960px;margin:0 auto}
+  footer a{color:#dce6ee}
+  .proto{display:inline-block;margin-bottom:.7rem;padding:.2rem .6rem;border:1px solid #3d5266;border-radius:6px;font-size:.72rem;letter-spacing:.5px;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div class="strip15" role="alert">
+  Perte de contrôle des urines, paralysie brutale, fièvre avec douleur du dos&nbsp;: <a href="tel:15">appelez le 15</a> sans attendre.
+</div>
+
+<header>
+  <div class="head-inner">
+    <div class="brand">Urgence Rachis<small>Espace Francilien du Rachis</small></div>
+    <a class="head-link" href="https://rachis.paris" rel="noopener">Site principal — rachis.paris →</a>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Votre dos ou votre cou nécessite-t-il une prise en charge rapide&nbsp;?</h1>
+  <p>Répondez à quelques questions&nbsp;: nous vous orientons vers le bon circuit — urgences, consultation sous 24&nbsp;h avec un chirurgien du rachis, rendez-vous rapide, ou suivi classique. Anonyme, sans inscription, aucune donnée conservée.</p>
+</section>
+
+<div class="chat-wrap">
+  <div class="chat" aria-live="polite">
+    <div class="chat-head">
+      <span class="dot" aria-hidden="true"></span>
+      <div>
+        <div class="t">Assistant d'orientation</div>
+        <div class="s">Ne remplace pas un avis médical</div>
+      </div>
+    </div>
+    <div class="chat-body" id="chat"></div>
+  </div>
+</div>
+
+<section class="why">
+  <h2>Pourquoi ne pas attendre&nbsp;?</h2>
+  <div class="cards">
+    <div class="card"><h3>Certains signes n'attendent pas</h3><p>Une perte de force, des troubles urinaires ou une fièvre associée à une douleur du rachis imposent une prise en charge immédiate ou très rapide.</p></div>
+    <div class="card"><h3>Des créneaux réservés</h3><p>L'équipe garde des consultations dédiées aux situations urgentes, non visibles sur Doctolib public, accessibles uniquement après cette évaluation.</p></div>
+    <div class="card"><h3>Une IRM organisée vite</h3><p>Quand elle est justifiée, l'imagerie est programmée rapidement pour ne pas retarder la décision thérapeutique.</p></div>
+  </div>
+</section>
+
+<section class="team">
+  <h2>L'équipe</h2>
+  <p>Chirurgiens du rachis de l'Espace Francilien du Rachis&nbsp;: Dr&nbsp;Mayalen&nbsp;Lamerain, Dr&nbsp;Raphaël&nbsp;Jameson, Dr&nbsp;Christophe&nbsp;Travert et Dr&nbsp;Robin&nbsp;Arvieu. Pour toute situation non urgente&nbsp;: <a href="https://rachis.paris" rel="noopener">rachis.paris</a>.</p>
+</section>
+
+<footer>
+  <div class="foot-inner">
+    <span class="proto">Prototype — v1 en cours de validation médicale</span>
+    <p>Cet outil d'orientation ne constitue pas un avis médical et ne remplace ni une consultation ni un appel au 15 en cas d'urgence. Les échanges sont anonymes et ne sont pas enregistrés. — <a href="https://rachis.paris" rel="noopener">rachis.paris</a></p>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — liens à remplacer par les liens Doctolib cachés réels
+   ===================================================================== */
+const LINKS = {
+  rdv24h:  "https://www.doctolib.fr/#LIEN-CACHE-CRENEAUX-24H",
+  rdv72h:  "https://www.doctolib.fr/#LIEN-CACHE-CRENEAUX-48-72H",
+  site:    "https://rachis.paris"
+};
+
+/* Aggravation : rappel affiché sous chaque sortie consultation */
+const LOCK = "Si apparaissent d'ici là une fièvre, une perte de force, des troubles urinaires ou une paralysie&nbsp;: appelez le 15 sans attendre.";
+
+const chat = document.getElementById("chat");
+function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;chat.appendChild(d);scroll();}
+function user(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;chat.appendChild(d);scroll();}
+function scroll(){chat.parentElement.scrollTop=chat.parentElement.scrollHeight;window.scrollBy({top:0});}
+function ask(text,options){
+  bot(text);
+  const w=document.createElement("div");w.className="choices";
+  options.forEach(([label,next])=>{
+    const b=document.createElement("button");b.textContent=label;
+    b.onclick=()=>{w.remove();user(label);setTimeout(next,350);};
+    w.appendChild(b);
+  });
+  chat.appendChild(w);scroll();
+}
+function exitCard(cls,title,body,cta){
+  const d=document.createElement("div");d.className="exit "+cls;
+  d.innerHTML=`<h3>${title}</h3>${body}${cta?`<a class="cta" href="${cta.href}" rel="noopener">${cta.label}</a>`:""}
+  <p class="note">Cet échange est anonyme et n'est pas conservé. Il ne constitue pas un avis médical.</p>`;
+  chat.appendChild(d);
+  const r=document.createElement("button");r.className="restart";r.textContent="↻ Recommencer l'évaluation";
+  r.onclick=()=>{chat.innerHTML="";start();};
+  chat.appendChild(r);scroll();
+}
+
+/* ============================ SORTIES ============================ */
+function sortie15(){
+  exitCard("n1","⚠️ Appelez le 15 maintenant",
+  `<p>Les signes que vous décrivez nécessitent une prise en charge médicale <strong>immédiate</strong>, sans attendre un rendez-vous. Appelez le <strong>15 (SAMU)</strong> ou rendez-vous au service d'urgences le plus proche. N'attendez pas que les symptômes s'aggravent.</p>`,
+  {href:"tel:15",label:"📞 Appeler le 15"});
+}
+function sortieUrgences(motif){
+  exitCard("n1","Rendez-vous aux urgences",
+  `<p>${motif} Rendez-vous au <strong>service d'urgences</strong> le plus proche, ou appelez le 15 si vous ne pouvez pas vous déplacer. Cette situation n'est pas prise en charge en consultation.</p>`,
+  {href:"tel:15",label:"📞 Appeler le 15"});
+}
+function sortie24h(motif,extra=""){
+  exitCard("n2","Consultation sous 24 heures",
+  `<p>${motif} L'équipe réserve des créneaux dédiés à ces situations, non visibles sur Doctolib public.</p>
+   ${extra}
+   <p>Lors de la réservation, remplissez le questionnaire et préparez&nbsp;: comptes rendus, imagerie (CD ou lien), carte Vitale et mutuelle.</p>
+   <p class="note">${LOCK}</p>`,
+  {href:LINKS.rdv24h,label:"Réserver un créneau sous 24 h"});
+}
+function sortie72h(motif,extra=""){
+  exitCard("n3","Consultation rapide (48 à 72 h)",
+  `<p>${motif}</p>${extra}
+   <p>Réservez un créneau réservé à ces situations et préparez vos comptes rendus et votre imagerie si vous en avez.</p>
+   <p class="note">${LOCK}</p>`,
+  {href:LINKS.rdv72h,label:"Réserver un créneau rapide"});
+}
+function sortie4(){
+  exitCard("n4","Pas de signe d'urgence identifié",
+  `<p>D'après vos réponses, votre situation ne présente pas de signe nécessitant une prise en charge en urgence. Elle mérite néanmoins un suivi&nbsp;: parlez-en à votre médecin traitant, et retrouvez sur notre site principal l'information sur les pathologies du dos et la prise de rendez-vous classique avec l'équipe.</p>
+   <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, douleur brutale après un choc), reprenez cette évaluation ou appelez le 15.</p>`,
+  {href:LINKS.site,label:"Continuer sur rachis.paris"});
+}
+
+/* ==================== ARBRE DE TRIAGE (v1 validée) ====================
+   Règles validées par le Dr Jameson (juillet 2026) :
+   - Fièvre + rachialgie → urgences, SANS EXCEPTION
+   - Sphincters / anesthésie de la selle → 15
+   - Paralysie complète brutale → ven/sam : urgences ; autres jours : consultation tôt le lendemain
+   - Perte de force partielle → 24 h
+   - Myélopathie cervicale (mains, marche, Lhermitte) → 24 h
+   - Trauma haute énergie < 24 h → urgences ; > 24 h → consultation rapide
+   - Trauma faible énergie (susp. tassement ostéoporotique) → 72 h
+   - Cancer < 5 ans + douleur nouvelle → 72 h (IRM rapide / oncologue si dispo)
+   - Niveau 3 : critères PROVISOIRES, en attente de validation (passe 2)
+   ===================================================================== */
+function start(){
+  bot(`Bonjour, je suis l'assistant d'orientation de l'<strong>Espace Francilien du Rachis</strong>. Je vais vous poser quelques questions pour évaluer si votre situation nécessite une prise en charge rapide. Je ne remplace pas un avis médical&nbsp;— en cas de détresse immédiate, appelez le&nbsp;15.`);
+  setTimeout(qSphincter,500);
+}
+
+function qSphincter(){
+  ask(`Depuis peu, avez-vous des <strong>difficultés à uriner ou à vous retenir</strong>, ou une <strong>perte de sensibilité entre les jambes</strong> ou au niveau du siège&nbsp;?`,
+  [["Oui",sortie15],["Non",qFievre]]);
+}
+function qFievre(){
+  ask(`Avez-vous de la <strong>fièvre ou des frissons</strong> en plus de votre douleur du dos ou du cou&nbsp;?`,
+  [["Oui",()=>sortieUrgences("Une fièvre associée à une douleur du rachis doit être explorée sans délai en milieu hospitalier.")],
+   ["Non",qParalysie]]);
+}
+function qParalysie(){
+  ask(`Avez-vous une <strong>paralysie complète et brutale</strong> d'un bras ou d'une jambe, installée en quelques heures (le membre ne répond plus du tout)&nbsp;?`,
+  [["Oui",exitParalysie],["Non",qForce]]);
+}
+function exitParalysie(){
+  const day=new Date().getDay(); /* 5 = vendredi, 6 = samedi */
+  if(day===5||day===6){
+    sortieUrgences("Une paralysie brutale nécessite un bilan sans attendre le début de semaine.");
+  }else{
+    sortie24h("Une paralysie brutale nécessite un avis chirurgical <strong>dès demain matin, en tout début de consultation</strong>.",
+    `<p><strong>Réservez le tout premier créneau de demain matin.</strong> Si aucun créneau n'apparaît pour demain matin, n'attendez pas&nbsp;: rendez-vous aux urgences ou appelez le 15.</p>`);
+  }
+}
+function qForce(){
+  ask(`Avez-vous une <strong>perte de force récente ou partielle</strong>&nbsp;: un pied qui accroche ou ne se relève plus, une jambe qui lâche, une main qui perd sa force&nbsp;?`,
+  [["Oui",()=>sortie24h("Une perte de force comme celle-ci justifie un avis chirurgical dans les 24 heures.")],
+   ["Non",qMyelo]]);
+}
+function qMyelo(){
+  ask(`Constatez-vous une <strong>maladresse des deux mains</strong> (boutons, écriture), des <strong>troubles de la marche ou de l'équilibre</strong>, ou des <strong>décharges électriques</strong> dans le dos ou les membres en penchant la tête en avant&nbsp;?`,
+  [["Oui",()=>sortie24h("Ces signes justifient un avis chirurgical sous 24 heures, avec une IRM cervicale organisée rapidement.")],
+   ["Non",qTrauma]]);
+}
+function qTrauma(){
+  ask(`Votre douleur fait-elle suite à un <strong>traumatisme</strong> (accident, chute, choc, faux mouvement)&nbsp;?`,
+  [["Oui",qTraumaType],["Non",qCancer]]);
+}
+function qTraumaType(){
+  ask(`De quel type de traumatisme s'agit-il&nbsp;?`,
+  [["Accident de la route / chute de hauteur",qTraumaDelai],
+   ["Chute de ma hauteur / faux mouvement / port de charge",()=>sortie72h(
+     "Après ce type de traumatisme, une consultation rapide est recommandée, idéalement sous 72 heures, notamment pour rechercher un tassement vertébral.",
+     `<p>Apportez vos radiographies si vous en avez déjà. Si une IRM est nécessaire, elle sera organisée par l'équipe.</p>`)]]);
+}
+function qTraumaDelai(){
+  ask(`Cet accident a-t-il eu lieu il y a <strong>moins de 24 heures</strong>&nbsp;?`,
+  [["Oui, moins de 24 h",()=>sortieUrgences("Après un accident récent à haute énergie, le bilan initial (examen complet, scanner) doit être réalisé en milieu hospitalier.")],
+   ["Non, plus de 24 h",()=>sortie72h(
+     "Après un accident à haute énergie datant de plus de 24 heures, une consultation rapide avec l'équipe est indiquée.",
+     `<p>Apportez les imageries et comptes rendus des urgences si vous y êtes passé(e).</p>`)]]);
+}
+function qCancer(){
+  ask(`Avez-vous (ou avez-vous eu) un <strong>cancer diagnostiqué ou traité au cours des 5 dernières années</strong>&nbsp;?`,
+  [["Oui",qCancerDouleur],["Non",qN3a]]);
+}
+function qCancerDouleur(){
+  ask(`Votre douleur du dos ou du cou est-elle <strong>nouvelle ou inhabituelle</strong>&nbsp;?`,
+  [["Oui",()=>sortie72h(
+    "Dans votre situation, une consultation rapide avec IRM est recommandée sous 72 heures.",
+    `<p>Vous pouvez aussi contacter votre <strong>oncologue</strong> s'il peut vous recevoir plus tôt.</p>`)],
+   ["Non",qN3a]]);
+}
+/* ---- Niveau 3 : critères provisoires, validation passe 2 en attente ---- */
+function qN3a(){
+  ask(`Votre douleur descend-elle dans le <strong>bras ou la jambe</strong> et reste-t-elle <strong>très intense malgré les médicaments</strong> (nuits impossibles)&nbsp;?`,
+  [["Oui",()=>sortie72h("Une douleur de ce type, résistante au traitement, justifie un avis chirurgical rapide avec, si besoin, une IRM organisée rapidement.")],
+   ["Non",qN3b]]);
+}
+function qN3b(){
+  ask(`Votre douleur évolue-t-elle depuis <strong>plus de 4 à 6 semaines malgré un traitement</strong>, ou avez-vous des <strong>fourmillements qui s'aggravent</strong>&nbsp;?`,
+  [["Oui",()=>sortie72h("Une douleur persistante malgré traitement, ou des fourmillements évolutifs, méritent un avis chirurgical sous 48 à 72 heures.")],
+   ["Non",qN3c]]);
+}
+function qN3c(){
+  ask(`Une <strong>IRM ou un scanner</strong> déjà réalisé montre-t-il, d'après le compte rendu, une <strong>hernie discale, un canal étroit ou une compression</strong>&nbsp;?`,
+  [["Oui",()=>sortie72h("Ces résultats d'imagerie justifient un avis chirurgical rapide pour décider de la suite de la prise en charge.")],
+   ["Non",sortie4]]);
+}
+
+start();
+</script>
+</body>
+</html>
