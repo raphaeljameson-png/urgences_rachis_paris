@@ -1,10 +1,21 @@
 {
-  // Configuration Cloudflare Worker — site statique Urgence'Rachis
-  // Le déploiement « npx wrangler deploy » sert le contenu du dossier ./public
+  // Configuration Cloudflare Worker — Urgence'Rachis (statique + API IA)
+  // Déploiement : « npx wrangler deploy »
+  //
+  // ⚠️ AVANT LE PREMIER DÉPLOIEMENT v2 :
+  // 1. Créer le namespace KV « URGENCE_KV » (dashboard : Storage & Databases > KV)
+  //    puis remplacer REMPLACER_PAR_ID_KV ci-dessous par son ID.
+  // 2. Ajouter le secret ANTHROPIC_API_KEY (Workers > urgences-rachis-paris >
+  //    Settings > Variables and Secrets > Add > Secret).
   "name": "urgences-rachis-paris",
+  "main": "src/worker.js",
   "compatibility_date": "2026-07-01",
   "assets": {
     "directory": "./public",
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    { "binding": "URGENCE_KV", "id": "REMPLACER_PAR_ID_KV" }
+  ]
 }
