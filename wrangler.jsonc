@@ -2,11 +2,9 @@
   // Configuration Cloudflare Worker — Urgence'Rachis (statique + API IA)
   // Déploiement : « npx wrangler deploy »
   //
-  // ⚠️ AVANT LE PREMIER DÉPLOIEMENT v2 :
-  // 1. Créer le namespace KV « URGENCE_KV » (dashboard : Storage & Databases > KV)
-  //    puis remplacer REMPLACER_PAR_ID_KV ci-dessous par son ID.
-  // 2. Ajouter le secret ANTHROPIC_API_KEY (Workers > urgences-rachis-paris >
-  //    Settings > Variables and Secrets > Add > Secret).
+  // Secrets requis (Workers > urgences-rachis-paris > Settings > Variables and Secrets) :
+  //   - ANTHROPIC_API_KEY (obligatoire, type Secret)
+  //   - STATS_KEY (optionnel : clé d'accès à /api/stats)
   "name": "urgences-rachis-paris",
   "main": "src/worker.js",
   "compatibility_date": "2026-07-01",
@@ -16,6 +14,6 @@
     "binding": "ASSETS"
   },
   "kv_namespaces": [
-    { "binding": "URGENCE_KV", "id": "REMPLACER_PAR_ID_KV" }
+    { "binding": "URGENCE_KV", "id": "8578258e537e45998f97f0ef80685f6f" }
   ]
 }
