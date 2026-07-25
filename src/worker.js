@@ -214,23 +214,6 @@ export default {
       return Response.json(out);
     }
 
-    // TEMPORAIRE — test de la chaîne d'envoi Gmail (à retirer après validation)
-    if (url.pathname === "/api/test-email") {
-      const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
-      if (!(await rateLimit(env, ip))) return Response.json({ error: "limite" }, { status: 429 });
-      try {
-        const id = await gmailSend(env, {
-          subject: "✅ Test Urgence'Rachis — chaîne d'envoi Gmail opérationnelle",
-          text: "Bonjour Dr Jameson,\n\nCet email confirme que l'envoi via l'API Gmail fonctionne de bout en bout :\n- secrets Cloudflare lus correctement,\n- jeton OAuth rafraîchi,\n- expéditeur : urgences@rachis.paris,\n- pièce jointe de démonstration incluse.\n\nProchaine étape : le formulaire patient avec rapport PDF joint automatiquement.\n\n— Le Worker Urgence'Rachis",
-          replyTo: "urgences@rachis.paris",
-          attachments: [{ filename: "test.txt", mimeType: "text/plain", dataB64: b64("Piece jointe de test Urgence'Rachis — " + new Date().toISOString()) }],
-        });
-        return Response.json({ ok: true, id });
-      } catch (e) {
-        return Response.json({ ok: false, erreur: String(e.message || e).slice(0, 300) }, { status: 502 });
-      }
-    }
-
     if (url.pathname === "/api/chat" && request.method === "POST") {
       const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
       if (!(await rateLimit(env, ip))) {
