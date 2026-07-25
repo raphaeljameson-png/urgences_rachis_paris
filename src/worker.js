@@ -185,8 +185,7 @@ export default {
       if (!api.ok) {
         const t = await api.text();
         console.log("API error", api.status, t.slice(0, 300));
-        // Diagnostic temporaire : code + extrait du message d'erreur amont (jamais la clé)
-        return Response.json({ error: "service indisponible", code: api.status, detail: t.slice(0, 200) }, { status: 502 });
+        return Response.json({ error: "service indisponible" }, { status: 502 });
       }
       const data = await api.json();
       await addSpend(env, model, data.usage);
