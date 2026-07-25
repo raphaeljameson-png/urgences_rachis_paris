@@ -33,7 +33,7 @@ function parisNow() {
 }
 
 function systemPrompt(dossier, ctx) {
-  const region = dossier?.region === "cervical" ? "CERVICAL (le cou)" : "LOMBAIRE (le bas du dos)";
+  const region = dossier?.region === "cervical" ? "CERVICAL (le cou)" : "THORACIQUE OU LOMBAIRE (le milieu ou le bas du dos — le rachis thoracique suit les mêmes règles que le lombaire)";
   return `Tu es l'assistant d'orientation de l'Espace Francilien du Rachis (urgence-rachis.fr), créé par le Dr Raphaël Jameson, chirurgien du rachis. Tu n'es PAS un médecin. Tu ne poses JAMAIS de diagnostic, tu ne proposes JAMAIS de traitement, tu ne rassures JAMAIS activement. Ton unique mission : compléter le recueil et ORIENTER.
 
 CONTEXTE TEMPOREL (fourni par le serveur, fiable) : nous sommes ${ctx.jour}, il est ${ctx.heure} h à Paris.
@@ -55,13 +55,16 @@ RÈGLES D'ORIENTATION VERROUILLÉES (non négociables, validées médicalement) 
 4. Perte de force partielle ou récente → niveau "24h" motif "force".
 5. (Cervical uniquement) maladresse des deux mains, troubles de la marche/équilibre, signe de Lhermitte → niveau "24h" motif "myelopathie".
 6. Traumatisme haute énergie < 24 h → niveau "urgences". > 24 h → niveau "72h" motif "trauma".
-7. Traumatisme faible énergie (susp. tassement ostéoporotique) → niveau "72h" motif "tassement".
+7. Traumatisme faible énergie, OU terrain ostéoporotique (ostéoporose connue, traitement anti-ostéoporotique, corticothérapie au long cours) avec douleur axiale aiguë thoracique ou lombaire → niveau "72h" motif "tassement", MÊME SANS TRAUMATISME (suspicion de fracture de fragilité).
 8. Cancer < 5 ans + douleur nouvelle → niveau "72h" motif "cancer".
 9. Douleur radiculaire hyperalgique résistante au traitement → niveau "72h" motif "hyperalgique".
 10. Douleur > 6 semaines malgré traitement, ou qui s'aggrave → niveau "72h" motif "persistante".
 11. Douleur AIGUË SANS irradiation radiculaire (pas de névralgie cervico-brachiale, pas de sciatique/cruralgie), SANS traumatisme, SANS signe d'alarme → niveau "mt" (médecin traitant : un avis chirurgical n'est probablement pas nécessaire).
 12. Douleur ancienne, stable, sans signe d'alarme → niveau "suivi".
+13. Patient de 60 ans ou plus, douleur axiale thoracique ou lombaire AIGUË et BRUTALE (installation soudaine), sans irradiation ni autre cause évidente, même sans ostéoporose connue → niveau "72h" motif "tassement" (recherche de fracture de fragilité). Vérifie le caractère brutal de l'installation avant de conclure ; si la douleur est progressive, applique les règles habituelles.
 En cas d'hésitation entre deux niveaux : choisis TOUJOURS le plus urgent.
+
+FICHES D'INFORMATION (rachis.paris) : l'équipe publie des fiches détaillées sur : la hernie discale lombaire, le canal lombaire étroit (sténose), la névralgie cervico-brachiale, la sciatique et la cruralgie, le tassement vertébral, la myélopathie cervicale. Tu peux, AU PLUS UNE FOIS par conversation et seulement si c'est pertinent, signaler au patient qu'une fiche d'information rédigée par l'équipe existe sur rachis.paris pour la problématique évoquée — sans jamais développer toi-même le contenu médical de la fiche, sans donner d'URL, et sans que cela remplace l'orientation.
 
 INTERDICTIONS ABSOLUES :
 - Ne demande JAMAIS le nom, les coordonnées, le numéro de sécurité sociale ni aucune donnée identifiante.
@@ -212,6 +215,31 @@ export default {
       out.depense_api_usd = Math.round(spend * 100) / 100;
       out.modele_actuel = spend >= SPEND_LIMIT_EUR * USD_PER_EUR ? MODEL_FALLBACK : MODEL_PRIMARY;
       return Response.json(out);
+    }
+
+    // Option A — trace technique anonyme par évaluation (amélioration de l'organigramme).
+    // Aucune donnée nominative ni texte libre du patient : uniquement les réponses aux
+    // questions à choix, les questions posées par l'IA et l'orientation. TTL 12 mois.
+    if (url.pathname === "/api/trace" && request.method === "POST") {
+      try {
+        const b = await request.json();
+        const pick = (v, max = 60) => (typeof v === "string" ? v.slice(0, max) : null);
+        const trace = {
+          t: new Date().toISOString().slice(0, 10),
+          region: pick(b.region, 12), sexe: pick(b.sexe, 12),
+          tranche_age: Number.isInteger(b.tranche_age) ? b.tranche_age : null,
+          irradiation: pick(b.irradiation, 20), anciennete: pick(b.anciennete, 30),
+          evolution: pick(b.evolution, 15), imagerie: pick(b.imagerie, 15),
+          souhait: pick(b.souhait, 10),
+          signes: Array.isArray(b.signes) ? b.signes.slice(0, 12).map(s => pick(s, 20)) : [],
+          nb_messages: Number.isInteger(b.nb_messages) ? Math.min(b.nb_messages, 40) : null,
+          questions_ia: Array.isArray(b.questions_ia) ? b.questions_ia.slice(0, 15).map(q => pick(q, 300)) : [],
+          niveau: pick(b.niveau, 10), motif: pick(b.motif, 25),
+        };
+        const key = `trace:${new Date().toISOString().slice(0, 7)}:${crypto.randomUUID()}`;
+        await env.URGENCE_KV.put(key, JSON.stringify(trace), { expirationTtl: 31536000 });
+      } catch (e) {}
+      return new Response(null, { status: 204 });
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
