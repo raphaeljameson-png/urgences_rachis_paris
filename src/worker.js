@@ -223,7 +223,7 @@ export default {
           subject: "✅ Test Urgence'Rachis — chaîne d'envoi Gmail opérationnelle",
           text: "Bonjour Dr Jameson,\n\nCet email confirme que l'envoi via l'API Gmail fonctionne de bout en bout :\n- secrets Cloudflare lus correctement,\n- jeton OAuth rafraîchi,\n- expéditeur : urgences@rachis.paris,\n- pièce jointe de démonstration incluse.\n\nProchaine étape : le formulaire patient avec rapport PDF joint automatiquement.\n\n— Le Worker Urgence'Rachis",
           replyTo: "urgences@rachis.paris",
-          attachments: [{ filename: "test.txt", mimeType: "text/plain", dataB64: btoa("Piece jointe de test Urgence'Rachis — " + new Date().toISOString()) }],
+          attachments: [{ filename: "test.txt", mimeType: "text/plain", dataB64: b64("Piece jointe de test Urgence'Rachis — " + new Date().toISOString()) }],
         });
         return Response.json({ ok: true, id });
       } catch (e) {
