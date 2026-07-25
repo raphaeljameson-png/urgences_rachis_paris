@@ -6,6 +6,7 @@
  *
  * Secrets / bindings requis (dashboard Cloudflare) :
  *   - Secret   : ANTHROPIC_API_KEY
+ *   - Secrets  : GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (envoi d'emails)
  *   - KV       : URGENCE_KV (compteur de dépense mensuelle + anti-abus IP)
  * Règles entérinées par le Dr Jameson — juillet 2026.
  */
@@ -110,6 +111,72 @@ async function addSpend(env, model, usage) {
   await env.URGENCE_KV.put(key, String(cur + usd), { expirationTtl: 5184000 });
 }
 
+/* ============ ENVOI D'EMAILS VIA L'API GMAIL (compte Google Workspace du cabinet) ============ */
+const GMAIL_FROM = "Urgence'Rachis <urgences@rachis.paris>";
+const GMAIL_TO = "dr.jameson@rachis.paris";
+
+async function gmailAccessToken(env) {
+  const r = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: env.GMAIL_CLIENT_ID,
+      client_secret: env.GMAIL_CLIENT_SECRET,
+      refresh_token: env.GMAIL_REFRESH_TOKEN,
+      grant_type: "refresh_token",
+    }),
+  });
+  const d = await r.json();
+  if (!r.ok || !d.access_token) throw new Error("oauth: " + JSON.stringify(d).slice(0, 200));
+  return d.access_token;
+}
+
+function b64url(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+const utf8 = t => new TextEncoder().encode(t);
+const b64 = t => btoa(String.fromCharCode(...utf8(t)));
+const encHeader = t => /[^\x20-\x7E]/.test(t) ? `=?UTF-8?B?${b64(t)}?=` : t;
+
+/**
+ * Envoie un email via l'API Gmail.
+ * attachments: [{ filename, mimeType, dataB64 }] (contenu déjà en base64 standard)
+ */
+async function gmailSend(env, { subject, text, replyTo, attachments = [] }) {
+  const token = await gmailAccessToken(env);
+  const boundary = "ur_" + crypto.randomUUID().replace(/-/g, "");
+  let mime =
+    `From: ${GMAIL_FROM}\r\n` +
+    `To: ${GMAIL_TO}\r\n` +
+    (replyTo ? `Reply-To: ${replyTo}\r\n` : "") +
+    `Subject: ${encHeader(subject)}\r\n` +
+    `MIME-Version: 1.0\r\n` +
+    `Content-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: text/plain; charset=UTF-8\r\n` +
+    `Content-Transfer-Encoding: base64\r\n\r\n` +
+    b64(text).replace(/(.{76})/g, "$1\r\n") + `\r\n`;
+  for (const a of attachments) {
+    mime +=
+      `--${boundary}\r\n` +
+      `Content-Type: ${a.mimeType}; name="${a.filename}"\r\n` +
+      `Content-Disposition: attachment; filename="${a.filename}"\r\n` +
+      `Content-Transfer-Encoding: base64\r\n\r\n` +
+      a.dataB64.replace(/(.{76})/g, "$1\r\n") + `\r\n`;
+  }
+  mime += `--${boundary}--`;
+  const r = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ raw: b64url(utf8(mime)) }),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error("gmail: " + JSON.stringify(d).slice(0, 200));
+  return d.id;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -145,6 +212,23 @@ export default {
       out.depense_api_usd = Math.round(spend * 100) / 100;
       out.modele_actuel = spend >= SPEND_LIMIT_EUR * USD_PER_EUR ? MODEL_FALLBACK : MODEL_PRIMARY;
       return Response.json(out);
+    }
+
+    // TEMPORAIRE — test de la chaîne d'envoi Gmail (à retirer après validation)
+    if (url.pathname === "/api/test-email") {
+      const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+      if (!(await rateLimit(env, ip))) return Response.json({ error: "limite" }, { status: 429 });
+      try {
+        const id = await gmailSend(env, {
+          subject: "✅ Test Urgence'Rachis — chaîne d'envoi Gmail opérationnelle",
+          text: "Bonjour Dr Jameson,\n\nCet email confirme que l'envoi via l'API Gmail fonctionne de bout en bout :\n- secrets Cloudflare lus correctement,\n- jeton OAuth rafraîchi,\n- expéditeur : urgences@rachis.paris,\n- pièce jointe de démonstration incluse.\n\nProchaine étape : le formulaire patient avec rapport PDF joint automatiquement.\n\n— Le Worker Urgence'Rachis",
+          replyTo: "urgences@rachis.paris",
+          attachments: [{ filename: "test.txt", mimeType: "text/plain", dataB64: btoa("Piece jointe de test Urgence'Rachis — " + new Date().toISOString()) }],
+        });
+        return Response.json({ ok: true, id });
+      } catch (e) {
+        return Response.json({ ok: false, erreur: String(e.message || e).slice(0, 300) }, { status: 502 });
+      }
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
