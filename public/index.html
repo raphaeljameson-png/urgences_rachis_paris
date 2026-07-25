@@ -2,167 +2,209 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Urgence'Rachis — Évaluer le degré d'urgence de votre douleur du dos ou du cou</title>
 <meta name="description" content="Outil d'orientation des urgences du rachis : décrivez vos symptômes et évaluez si votre situation nécessite une prise en charge rapide. Créé par le Dr Raphaël Jameson, Espace Francilien du Rachis.">
-<meta name="theme-color" content="#0B1628">
+<meta name="theme-color" content="#003366">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Raleway:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   Urgence'Rachis — Design System "Precision Médicale" v2.0
-   Charte reprise d'Opti'CCAM (Dr R. Jameson)
+   Urgence'Rachis — v3 « Blanc clinique »
+   Charte alignée rachis.paris : marine #003366 · turquoise #1abc9c
+   Design validé (maquette A) — textes patients validés mot à mot
    ============================================================ */
 :root{
-  --navy-900:#050F1F; --navy-800:#0B1628; --navy-700:#112035;
-  --navy-600:#1A3050; --navy-400:#2E4D75; --navy-200:#6B8DB5;
-  --navy-100:#B0C4DB; --navy-50:#E8EEF5;
-  --sky-500:#38BDF8; --sky-400:#7DD3FC; --sky-100:#E0F2FE; --sky-50:#F0F9FF;
-  --emerald-600:#059669; --emerald-500:#10B981; --emerald-100:#D1FAE5; --emerald-50:#ECFDF5;
-  --amber-500:#F59E0B; --amber-100:#FEF3C7; --amber-50:#FFFBEB;
-  --rose-500:#F43F5E; --rose-100:#FFE4E6; --rose-50:#FFF1F2;
-  --slate-900:#0F172A; --slate-700:#334155; --slate-500:#64748B;
-  --slate-400:#94A3B8; --slate-300:#CBD5E1; --slate-200:#E2E8F0;
-  --slate-100:#F1F5F9; --slate-50:#F8FAFC;
-  --color-bg:#F4F7FA; --color-surface:#FFFFFF;
-  --color-border:#E2E8F0; --color-border-soft:#EEF2F7;
-  --color-text-primary:#0F172A; --color-text-secondary:#475569; --color-text-muted:#94A3B8;
-  --font-body:'DM Sans',system-ui,sans-serif;
-  --font-mono:'DM Mono','Fira Code',monospace;
-  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-full:9999px;
-  --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
-  --shadow-lg:0 12px 32px rgba(15,23,42,.12),0 4px 8px rgba(15,23,42,.06);
-  --ease:cubic-bezier(.4,0,.2,1);
+  --marine:#003366; --marine-soft:#0d4a80;
+  --turquoise:#1abc9c; --turquoise-dark:#149a80; --turquoise-pale:#e8f8f4;
+  --encre:#303030; --gris:#6b7280; --gris-clair:#9d9d9d;
+  --ligne:#e8ecef; --fond-doux:#f8fafb;
+  --rose:#e5484d; --rose-pale:#fdecec;
+  --ambre:#f59e0b; --ambre-pale:#fdf3e0;
+  --font-titre:'Montserrat',sans-serif;
+  --font-corps:'Raleway',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --r-md:10px; --r-lg:16px; --r-full:9999px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--color-bg);font-family:var(--font-body);color:var(--color-text-primary);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+html{scroll-behavior:smooth}
+body{background:#fff;font-family:var(--font-corps);color:var(--encre);line-height:1.65;font-size:15.5px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+h1,h2,h3{font-family:var(--font-titre);color:var(--marine)}
 
-.strip15{background:var(--rose-500);color:#fff;text-align:center;padding:9px 16px;font-size:.86rem;font-weight:500;position:sticky;top:0;z-index:60}
+
+/* apparitions au défilement — sobres, désactivées si mouvement réduit */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.reveal.vu{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.pulse{animation:none!important}}
+
+/* ---- bandeau 15 (inchangé, seul aplat vif conservé) ---- */
+.strip15{background:var(--rose);color:#fff;text-align:center;padding:9px 16px;font-size:.86rem;font-weight:500}
 .strip15 a{color:#fff;font-weight:700;text-decoration:underline}
 
-.navbar{background:var(--navy-800);border-bottom:1px solid var(--navy-700)}
-.nav-inner{max-width:980px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{color:#fff;font-weight:700;font-size:1.12rem;letter-spacing:.2px}
-.brand .apo{color:var(--sky-400)}
-.brand-sub{font-size:.7rem;color:var(--navy-100);letter-spacing:.6px;text-transform:uppercase}
-.nav-link{color:var(--navy-100);font-size:.85rem;text-decoration:none}
-.nav-link:hover{color:#fff}
-.badge-beta{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.8px;text-transform:uppercase;color:var(--sky-400);border:1px solid var(--navy-600);background:var(--navy-700);border-radius:var(--radius-full);padding:3px 12px}
-.badge-beta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sky-500);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+/* ---- barre de navigation : blanche, filet marine ---- */
+.navbar{background:#fff;border-bottom:1px solid var(--ligne);position:sticky;top:0;z-index:50}
+.nav-inner{max-width:1040px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--font-titre);font-weight:700;font-size:1.15rem;color:var(--marine)}
+.brand .apo{color:var(--turquoise)}
+.brand-sub{font-size:.68rem;color:var(--gris);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--font-titre);font-weight:500}
+.badge-beta{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.8px;text-transform:uppercase;color:var(--turquoise-dark);border:1px solid var(--turquoise);background:var(--turquoise-pale);border-radius:var(--r-full);padding:3px 12px}
+.nav-link{color:var(--marine);font-size:.85rem;text-decoration:none;font-weight:600}
+.nav-link:hover{color:var(--turquoise-dark)}
 
-/* ---- Héros avec infographie ---- */
-.hero{background:linear-gradient(180deg,var(--navy-800) 0%,var(--navy-700) 100%);color:#fff;padding:44px 0 130px}
-.hero .wrap{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
-@media (max-width:760px){.hero .wrap{grid-template-columns:1fr}.hero-art{display:none}}
-.hero h1{font-size:clamp(1.55rem,4.5vw,2.3rem);font-weight:700;line-height:1.2;max-width:22ch}
-.hero h1 em{font-style:normal;color:var(--sky-400)}
-.hero p{color:var(--navy-100);max-width:60ch;font-size:1rem;margin-top:12px}
-.hero .mini{font-size:.84rem;color:var(--navy-200);margin-top:10px}
-.hero-art svg{display:block}
+/* ---- HÉROS : blanc, colonne annotée en signature ---- */
+.hero{padding:58px 0 30px;background:#fff}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center}
+@media (max-width:820px){.hero .wrap{grid-template-columns:1fr}.hero-art{order:-1;justify-self:center;transform:scale(.85)}}
+.hero h1{font-size:clamp(1.6rem,4.2vw,2.45rem);font-weight:700;line-height:1.22;letter-spacing:-.3px}
+.hero h1 em{font-style:normal;color:var(--turquoise)}
+.hero p{color:var(--gris);max-width:58ch;font-size:1.02rem;margin-top:16px}
+.hero .mini{font-size:.85rem;color:var(--gris-clair);margin-top:12px}
+.hero .cta-start{display:inline-block;margin-top:22px;background:var(--turquoise);color:#fff;font-family:var(--font-titre);font-weight:600;font-size:.95rem;padding:13px 30px;border-radius:var(--r-full);text-decoration:none;box-shadow:0 4px 14px rgba(26,188,156,.28);transition:background .2s,transform .2s}
+.hero .cta-start:hover{background:var(--turquoise-dark);transform:translateY(-1px)}
 
-.chat-zone{margin-top:-96px;position:relative;z-index:5}
-.chat{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);overflow:hidden}
-.chat-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--color-border-soft);background:linear-gradient(180deg,#fff,var(--slate-50))}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--emerald-500);box-shadow:0 0 0 4px rgba(16,185,129,.16)}
-.chat-head .t{font-size:.92rem;font-weight:600}
-.chat-head .s{font-size:.76rem;color:var(--color-text-muted)}
-.chat-body{padding:18px;min-height:380px;display:flex;flex-direction:column;gap:12px}
-.msg{max-width:88%;padding:11px 15px;border-radius:var(--radius-lg);font-size:.94rem;animation:pop .25s var(--ease)}
-.msg.bot{background:var(--slate-100);border:1px solid var(--slate-200);border-bottom-left-radius:4px;align-self:flex-start}
-.msg.user{background:var(--navy-800);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;white-space:pre-wrap}
-@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.msg,.exit{animation:none}}
+/* colonne vertébrale annotée */
+.hero-art{position:relative}
+.pulse{animation:halo 2.6s ease-in-out infinite}
+@keyframes halo{0%,100%{opacity:.35}50%{opacity:.75}}
 
-.choices{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start}
-.choices button{font-family:inherit;font-size:.9rem;font-weight:500;padding:9px 18px;border-radius:var(--radius-full);cursor:pointer;background:#fff;color:var(--navy-600);border:1.5px solid var(--sky-500);transition:background .15s,color .15s}
-.choices button:hover,.choices button:focus-visible{background:var(--sky-500);color:#fff;outline:none;box-shadow:0 0 0 3px rgba(56,189,248,.22)}
-
-/* Cartes région (cervical / lombaire) avec schéma */
+/* ---- zone chat : carte blanche, filet, accent turquoise ---- */
+.chat-zone{margin-top:6px;position:relative;padding:26px 0 34px}
+/* voile discret derrière la carte pour la détacher du fond blanc */
+.chat-zone::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 78% 92% at 50% 42%,rgba(26,188,156,.075),rgba(0,51,102,.03) 55%,transparent 78%);pointer-events:none}
+.chat{position:relative;background:#fff;border:1px solid #d3e9e3;border-top:4px solid var(--turquoise);border-radius:var(--r-lg);overflow:hidden;
+  /* ombre décroissante en trois couches + fin halo turquoise */
+  box-shadow:0 0 0 5px rgba(26,188,156,.07),
+             0 2px 6px rgba(0,51,102,.10),
+             0 14px 30px rgba(0,51,102,.12),
+             0 34px 64px rgba(0,51,102,.10)}
+.chat-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--ligne)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--turquoise);box-shadow:0 0 0 4px rgba(26,188,156,.18)}
+.chat-head .t{font-family:var(--font-titre);font-size:.92rem;font-weight:600;color:var(--marine)}
+.chat-head .s{font-size:.76rem;color:var(--gris-clair)}
+.chat-body{padding:18px;min-height:250px;display:flex;flex-direction:column;gap:14px}
+/* rangée = avatar + bulle ; deux identités bien distinctes */
+.row{display:flex;gap:10px;max-width:92%}
+.row.bot{align-self:flex-start}
+.row.user{align-self:flex-end;flex-direction:row-reverse}
+.avatar{flex-shrink:0;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-titre);font-size:.72rem;font-weight:700;margin-top:16px}
+.row.bot .avatar{background:var(--turquoise-pale);border:1.5px solid var(--turquoise);color:var(--turquoise-dark)}
+.row.user .avatar{background:var(--marine);border:1.5px solid var(--marine);color:#fff;font-size:.5rem;letter-spacing:.3px}
+.bulle{display:flex;flex-direction:column}
+.qui{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.8px;text-transform:uppercase;margin:0 4px 3px;color:var(--gris-clair)}
+.row.user .qui{text-align:right}
+.msg{padding:11px 15px;border-radius:var(--r-lg);font-size:.94rem}
+/* assistant : fond turquoise très pâle + contour turquoise, queue à gauche */
+.msg.bot{background:var(--turquoise-pale);border:1.5px solid rgba(26,188,156,.45);border-bottom-left-radius:4px;color:var(--encre)}
+/* patient : fond marine + contour, texte blanc, queue à droite */
+.msg.user{background:var(--marine);border:1.5px solid var(--marine-soft);border-bottom-right-radius:4px;color:#fff}
 .region-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-self:stretch}
 @media (max-width:560px){.region-cards{grid-template-columns:1fr}}
-.region-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid var(--slate-300);border-radius:var(--radius-lg);cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,box-shadow .15s}
-.region-card:hover,.region-card:focus-visible{border-color:var(--sky-500);box-shadow:0 0 0 3px rgba(56,189,248,.18);outline:none}
-.region-card b{display:block;font-size:.95rem;color:var(--navy-800)}
-.region-card span{font-size:.8rem;color:var(--color-text-secondary)}
+.region-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1.5px solid var(--ligne);border-radius:var(--r-md);cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,box-shadow .15s}
+.region-card:hover{border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(26,188,156,.14)}
+.region-card b{display:block;font-family:var(--font-titre);font-size:.92rem;color:var(--marine)}
+.region-card span{font-size:.8rem;color:var(--gris)}
 
-/* Champs de saisie dans le chat */
-.field{display:flex;gap:8px;align-self:stretch;max-width:420px}
-.field input,.field textarea{flex:1;font-family:inherit;font-size:.95rem;padding:10px 14px;border:1.5px solid var(--slate-300);border-radius:var(--radius-md);background:#fff;color:var(--color-text-primary)}
+/* ---- sections génériques ---- */
+section{padding:56px 0 0}
+.eyebrow{font-family:var(--font-mono);font-size:.7rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--turquoise-dark);margin-bottom:10px}
+h2{font-size:1.5rem;font-weight:700;margin-bottom:12px;letter-spacing:-.2px}
+.lead{color:var(--gris);max-width:70ch}
+
+/* ---- FRISE DES NIVEAUX D'URGENCE ---- */
+.frise{margin-top:30px}
+.frise-bar{height:7px;border-radius:var(--r-full);background:linear-gradient(90deg,var(--rose) 0%,var(--rose) 19%,var(--ambre) 24%,var(--ambre) 43%,var(--turquoise) 48%,var(--turquoise) 67%,var(--gris-clair) 72%,#d7dbe0 100%)}
+.frise-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+@media (max-width:820px){.frise-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.frise-grid{grid-template-columns:1fr}}
+.niveau{background:#fff;border:1px solid var(--ligne);border-radius:var(--r-md);padding:16px;position:relative}
+.niveau::before{content:"";position:absolute;top:0;left:16px;right:auto;width:34px;height:3px;border-radius:0 0 3px 3px}
+.niveau.n1::before{background:var(--rose)}.niveau.n2::before{background:var(--ambre)}
+.niveau.n3::before{background:var(--turquoise)}.niveau.n4::before{background:var(--gris-clair)}
+.niveau .delai{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.6px;text-transform:uppercase;color:var(--gris-clair)}
+.niveau.n1 .delai{color:var(--rose)}.niveau.n2 .delai{color:#b47408}.niveau.n3 .delai{color:var(--turquoise-dark)}
+.niveau h3{font-size:.98rem;margin:5px 0 5px}
+.niveau p{font-size:.86rem;color:var(--gris)}
+.niveau svg{position:absolute;top:14px;right:14px}
+
+/* ---- PATHOLOGIES : vignettes SVG ---- */
+.pathos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+@media (max-width:820px){.pathos{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.pathos{grid-template-columns:1fr}}
+.patho{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--ligne);border-radius:var(--r-md);padding:16px;text-decoration:none;transition:border-color .18s,box-shadow .18s,transform .18s}
+.patho:hover{border-color:var(--turquoise);box-shadow:0 6px 18px rgba(0,51,102,.08);transform:translateY(-2px)}
+.patho svg{flex-shrink:0}
+.patho b{display:block;font-family:var(--font-titre);font-size:.92rem;color:var(--marine);font-weight:600}
+.patho span{font-size:.82rem;color:var(--gris)}
+.patho .lien{font-size:.78rem;color:var(--turquoise-dark);font-weight:600}
+
+/* ---- appel prudence ---- */
+.callout{margin-top:30px;background:var(--rose-pale);border:1px solid var(--rose);border-radius:var(--r-md);padding:18px 20px}
+.callout h3{color:var(--rose);font-size:1rem;margin-bottom:6px}
+.callout p{font-size:.92rem}
+
+/* ---- transparence ---- */
+.about{background:var(--fond-doux);border:1px solid var(--ligne);border-radius:var(--r-lg);padding:26px;display:grid;gap:22px;grid-template-columns:1fr 1fr;margin-top:22px}
+@media (max-width:820px){.about{grid-template-columns:1fr}}
+.about h3{font-size:1rem;margin-bottom:8px}
+.about p{font-size:.9rem;color:var(--gris)}
+.about a{color:var(--turquoise-dark);font-weight:600}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:.7rem;background:#fff;color:var(--turquoise-dark);border:1px solid var(--turquoise);border-radius:var(--r-full);padding:3px 10px;margin:6px 4px 0 0}
+
+/* ---- widgets du parcours (palette rachis.paris) ---- */
+.choices{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;margin-left:40px}
+.choices button{font-family:inherit;font-size:.9rem;font-weight:500;padding:9px 18px;border-radius:var(--r-full);cursor:pointer;background:#fff;color:var(--marine);border:1.5px solid var(--turquoise);transition:background .15s,color .15s}
+.choices button:hover,.choices button:focus-visible{background:var(--turquoise);color:#fff;outline:none;box-shadow:0 0 0 3px rgba(26,188,156,.22)}
+.field{display:flex;gap:8px;align-self:stretch;max-width:420px;margin-left:40px}
+.field input,.field textarea{flex:1;font-family:inherit;font-size:.95rem;padding:10px 14px;border:1.5px solid var(--ligne);border-radius:var(--r-md);background:#fff;color:var(--encre)}
 .field textarea{min-height:88px;resize:vertical;max-width:none}
 .field.wide{max-width:none}
-.field input:focus,.field textarea:focus{outline:none;border-color:var(--sky-500);box-shadow:0 0 0 3px rgba(56,189,248,.18)}
-.field .go{font-family:inherit;font-weight:600;font-size:.9rem;padding:10px 18px;border:none;border-radius:var(--radius-md);background:var(--sky-500);color:#fff;cursor:pointer;align-self:flex-start}
-.field .go:hover{filter:brightness(1.06)}
-
-/* Checklist signes d'alarme */
-.checklist{display:flex;flex-direction:column;gap:8px;align-self:stretch}
-.checklist label{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1.5px solid var(--slate-300);border-radius:var(--radius-md);padding:10px 12px;font-size:.9rem;cursor:pointer}
-.checklist label:has(input:checked){border-color:var(--rose-500);background:var(--rose-50)}
-.checklist input{margin-top:3px;accent-color:var(--rose-500)}
-.checklist .none:has(input:checked){border-color:var(--emerald-500);background:var(--emerald-50)}
-.checklist .none input{accent-color:var(--emerald-500)}
-
-.exit{border-radius:var(--radius-lg);padding:16px 18px;font-size:.94rem;align-self:stretch;animation:pop .3s var(--ease)}
-.exit h3{font-size:1.03rem;margin-bottom:6px;font-weight:700}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(26,188,156,.18)}
+.field .go{font-family:var(--font-titre);font-weight:600;font-size:.9rem;padding:10px 18px;border:none;border-radius:var(--r-md);background:var(--turquoise);color:#fff;cursor:pointer;align-self:flex-start}
+.field .go:hover{background:var(--turquoise-dark)}
+.checklist{display:flex;flex-direction:column;gap:8px;align-self:stretch;margin-left:40px}
+.checklist label{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1.5px solid var(--ligne);border-radius:var(--r-md);padding:10px 12px;font-size:.9rem;cursor:pointer}
+.checklist label:has(input:checked){border-color:var(--rose);background:var(--rose-pale)}
+.checklist input{margin-top:3px;accent-color:var(--rose)}
+.checklist .none:has(input:checked){border-color:var(--turquoise);background:var(--turquoise-pale)}
+.checklist .none input{accent-color:var(--turquoise)}
+.exit{border-radius:var(--r-md);padding:16px 18px;font-size:.94rem;align-self:stretch}
+.exit h3{font-family:var(--font-titre);font-size:1.03rem;margin-bottom:6px;font-weight:700}
 .exit p{margin:5px 0}
-.exit.n1{background:var(--rose-50);border:1.5px solid var(--rose-500)}
-.exit.n1 h3{color:var(--rose-500)}
-.exit.n2{background:var(--amber-50);border:1.5px solid var(--amber-500)}
+.exit.n1{background:var(--rose-pale);border:1.5px solid var(--rose)}
+.exit.n1 h3{color:var(--rose)}
+.exit.n2{background:var(--ambre-pale);border:1.5px solid var(--ambre)}
 .exit.n2 h3{color:#92600A}
-.exit.n3{background:var(--emerald-50);border:1.5px solid var(--emerald-500)}
-.exit.n3 h3{color:var(--emerald-600)}
-.exit.n4{background:var(--slate-100);border:1.5px solid var(--slate-300)}
-.exit.n4 h3{color:var(--navy-600)}
-.exit .cta{display:inline-block;margin:10px 8px 0 0;padding:10px 20px;border-radius:var(--radius-full);text-decoration:none;font-weight:600;font-size:.9rem;border:none;cursor:pointer;font-family:inherit}
-.exit .cta:hover{filter:brightness(1.08)}
-.exit.n1 .cta{background:var(--rose-500);color:#fff}
-.exit.n2 .cta{background:var(--amber-500);color:#fff}
-.exit.n3 .cta{background:var(--emerald-500);color:#fff}
-.exit.n4 .cta{background:var(--navy-800);color:#fff}
-.exit .cta.pdf{background:var(--navy-800);color:#fff}
-.exit .note{font-size:.8rem;color:var(--color-text-secondary);margin-top:9px}
-.restart{margin-top:6px;align-self:flex-start;background:none;border:none;color:var(--color-text-muted);font-size:.82rem;text-decoration:underline;cursor:pointer;font-family:inherit}
-
-section{padding:46px 0 0}
-.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--sky-500);margin-bottom:8px}
-h2{font-size:1.35rem;font-weight:700;color:var(--navy-800);margin-bottom:14px}
-.lead{color:var(--color-text-secondary);max-width:70ch}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:18px}
-.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm)}
-.card .num{font-family:var(--font-mono);font-size:.78rem;color:var(--sky-500);margin-bottom:6px}
-.card h3{font-size:.98rem;font-weight:600;color:var(--navy-800);margin-bottom:6px}
-.card p{font-size:.88rem;color:var(--color-text-secondary)}
-.card svg{display:block;margin:0 auto 10px}
-
-.callout{margin-top:26px;background:var(--rose-50);border:1.5px solid var(--rose-500);border-radius:var(--radius-lg);padding:18px 20px}
-.callout h3{color:var(--rose-500);font-size:1rem;font-weight:700;margin-bottom:6px}
-.callout p{font-size:.92rem;color:var(--slate-700)}
-
-.about{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:18px}
-.about h3{font-size:1rem;font-weight:700;color:var(--navy-800);margin-bottom:8px}
-.about p{font-size:.9rem;color:var(--color-text-secondary)}
-.about a{color:var(--sky-500);font-weight:500}
-.pill{display:inline-block;font-family:var(--font-mono);font-size:.72rem;background:var(--emerald-50);color:var(--emerald-600);border:1px solid var(--emerald-100);border-radius:var(--radius-full);padding:3px 10px;margin:3px 4px 0 0}
-
-/* Phase IA : barre de saisie + frappe */
-.iabar{display:flex;gap:8px;align-self:stretch}
-.iabar textarea{flex:1;font-family:inherit;font-size:.95rem;padding:10px 14px;border:1.5px solid var(--slate-300);border-radius:var(--radius-md);resize:none;min-height:46px;max-height:120px}
-.iabar textarea:focus{outline:none;border-color:var(--sky-500);box-shadow:0 0 0 3px rgba(56,189,248,.18)}
-.iabar button{font-family:inherit;font-weight:600;font-size:.9rem;padding:10px 18px;border:none;border-radius:var(--radius-md);background:var(--sky-500);color:#fff;cursor:pointer}
-.iabar button:disabled{opacity:.5;cursor:default}
-.typing{align-self:flex-start;display:flex;gap:4px;padding:12px 16px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-lg);border-bottom-left-radius:4px}
-.typing i{width:7px;height:7px;border-radius:50%;background:var(--slate-400);animation:blink 1.2s infinite}
+.exit.n3{background:var(--turquoise-pale);border:1.5px solid var(--turquoise)}
+.exit.n3 h3{color:var(--turquoise-dark)}
+.exit.n4{background:var(--fond-doux);border:1.5px solid var(--ligne)}
+.exit.n4 h3{color:var(--marine)}
+.exit .cta{display:inline-block;margin:10px 8px 0 0;padding:10px 20px;border-radius:var(--r-full);text-decoration:none;font-family:var(--font-titre);font-weight:600;font-size:.9rem;border:none;cursor:pointer}
+.exit .cta:hover{filter:brightness(1.06)}
+.exit.n1 .cta{background:var(--rose);color:#fff}
+.exit.n2 .cta{background:var(--ambre);color:#fff}
+.exit.n3 .cta{background:var(--turquoise);color:#fff}
+.exit.n4 .cta{background:var(--marine);color:#fff}
+.exit .cta.pdf{background:var(--marine);color:#fff}
+.exit .note{font-size:.8rem;color:var(--gris);margin-top:9px}
+.restart{margin-top:6px;align-self:flex-start;background:none;border:none;color:var(--gris-clair);font-size:.82rem;text-decoration:underline;cursor:pointer;font-family:inherit}
+.iabar{display:flex;gap:8px;align-self:stretch;margin-left:40px}
+.iabar textarea{flex:1;font-family:inherit;font-size:.95rem;padding:10px 14px;border:1.5px solid var(--ligne);border-radius:var(--r-md);resize:none;min-height:46px;max-height:120px}
+.iabar textarea:focus{outline:none;border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(26,188,156,.18)}
+.iabar button{font-family:var(--font-titre);font-weight:600;font-size:.9rem;padding:10px 18px;border:none;border-radius:var(--r-md);background:var(--turquoise);color:#fff;cursor:pointer}
+.iabar button:hover{background:var(--turquoise-dark)}
+.typing{align-self:flex-start;display:flex;gap:4px;padding:12px 16px;background:var(--turquoise-pale);border:1px solid rgba(26,188,156,.4);border-radius:var(--r-lg);border-bottom-left-radius:4px;margin-left:40px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--turquoise-dark);animation:blink 1.2s infinite}
 .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
 
-footer{margin-top:52px;background:var(--navy-900);color:var(--navy-100);padding:26px 0 34px;font-size:.82rem}
+/* ---- pied de page marine ---- */
+footer{margin-top:60px;background:var(--marine);color:#cfe0ee;padding:30px 0 38px;font-size:.82rem}
 footer .wrap{display:flex;flex-direction:column;gap:10px}
-footer a{color:var(--sky-400)}
-.foot-badge{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.8px;text-transform:uppercase;color:var(--navy-200);border:1px solid var(--navy-600);border-radius:var(--radius-sm);padding:3px 9px;width:fit-content}
+footer a{color:var(--turquoise)}
+.foot-badge{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.8px;text-transform:uppercase;color:#9fc0da;border:1px solid #1e527e;border-radius:6px;padding:3px 9px;width:fit-content}
 </style>
 </head>
 <body>
@@ -177,8 +219,8 @@ footer a{color:var(--sky-400)}
       <div class="brand">Urgence<span class="apo">'</span>Rachis</div>
       <div class="brand-sub">Espace Francilien du Rachis</div>
     </div>
-    <span class="badge-beta">Version d'essai</span>
-    <a class="nav-link" href="https://rachis.paris" rel="noopener">rachis.paris →</a>
+    <span class="badge-beta">● Version d'essai</span>
+    <a class="nav-link" href="https://rachis.paris">rachis.paris →</a>
   </div>
 </nav>
 
@@ -187,106 +229,118 @@ footer a{color:var(--sky-400)}
     <div>
       <h1>Douleur aiguë du rachis cervical ou du rachis lombaire&nbsp;: <em>quel degré d'urgence&nbsp;?</em></h1>
       <p>Cervicalgie, névralgie cervico-brachiale, lombalgie, sciatique, cruralgie&nbsp;: certaines situations imposent une prise en charge en urgence, d'autres justifient un avis chirurgical rapide — la plupart relèvent d'un suivi programmé ou du médecin traitant. Cet espace, développé par un chirurgien du rachis, aide à situer votre situation et vous oriente vers le bon circuit de soins.</p>
-      <p class="mini">Version d'essai — cet outil n'a pas vocation à se substituer à un médecin. Au moindre doute, rendez-vous aux urgences proches de votre domicile ou appelez le&nbsp;15.</p>
+      <p class="mini">Version d'essai — cet outil n'a pas vocation à se substituer à un médecin. Au moindre doute, appelez le&nbsp;15.</p>
+      <a class="cta-start" href="#evaluation">Commencer l'évaluation</a>
     </div>
-    <!-- Infographie : colonne vertébrale, zones cervicale et lombaire -->
+
+    <!-- SIGNATURE : colonne vertébrale annotée façon compte rendu d'imagerie -->
     <div class="hero-art" aria-hidden="true">
-      <svg width="190" height="330" viewBox="0 0 190 330" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="gcerv" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#7DD3FC"/>
-          </linearGradient>
-          <linearGradient id="glomb" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#F59E0B"/><stop offset="1" stop-color="#FBBF24"/>
-          </linearGradient>
-        </defs>
-        <circle cx="95" cy="24" r="17" fill="#1A3050" stroke="#2E4D75" stroke-width="2"/>
-        <g>
-          <rect x="80" y="46" width="30" height="9" rx="4.5" fill="url(#gcerv)"/>
-          <rect x="79" y="58" width="32" height="9" rx="4.5" fill="url(#gcerv)"/>
-          <rect x="78" y="70" width="34" height="9" rx="4.5" fill="url(#gcerv)"/>
-          <rect x="78" y="82" width="34" height="9" rx="4.5" fill="url(#gcerv)"/>
-          <rect x="77" y="94" width="36" height="9" rx="4.5" fill="url(#gcerv)"/>
+      <svg width="330" height="470" viewBox="0 0 330 470" xmlns="http://www.w3.org/2000/svg">
+        <!-- halos des zones -->
+        <ellipse class="pulse" cx="150" cy="97" rx="52" ry="44" fill="#1abc9c" opacity="0.35" style="filter:blur(1px)" fill-opacity="0.16"/>
+        <ellipse class="pulse" cx="150" cy="330" rx="60" ry="52" fill="#f59e0b" opacity="0.35" style="animation-delay:1.3s;filter:blur(1px)" fill-opacity="0.14"/>
+        <!-- crâne stylisé -->
+        <circle cx="150" cy="30" r="21" fill="none" stroke="#003366" stroke-width="2.5"/>
+        <!-- rachis cervical C1–C7 -->
+        <g stroke="#003366" stroke-width="1.4">
+          <rect x="132" y="58"  width="36" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
+          <rect x="131" y="73"  width="38" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
+          <rect x="130" y="88"  width="40" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
+          <rect x="130" y="103" width="40" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
+          <rect x="129" y="118" width="42" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
         </g>
-        <text x="128" y="78" font-family="DM Mono,monospace" font-size="10" fill="#7DD3FC">CERVICAL</text>
-        <text x="128" y="90" font-family="DM Sans,sans-serif" font-size="9" fill="#6B8DB5">le cou</text>
-        <g fill="#2E4D75">
-          <rect x="76" y="107" width="38" height="9" rx="4.5"/>
-          <rect x="75" y="119" width="40" height="9" rx="4.5"/>
-          <rect x="75" y="131" width="40" height="9" rx="4.5"/>
-          <rect x="74" y="143" width="42" height="9" rx="4.5"/>
-          <rect x="74" y="155" width="42" height="9" rx="4.5"/>
-          <rect x="73" y="167" width="44" height="9" rx="4.5"/>
-          <rect x="73" y="179" width="44" height="9" rx="4.5"/>
-          <rect x="72" y="191" width="46" height="9" rx="4.5"/>
+        <!-- rachis thoracique (neutre) -->
+        <g fill="#fff" stroke="#8aa8c4" stroke-width="1.4">
+          <rect x="128" y="134" width="44" height="11" rx="5.5"/>
+          <rect x="127" y="149" width="46" height="11" rx="5.5"/>
+          <rect x="127" y="164" width="46" height="11" rx="5.5"/>
+          <rect x="126" y="179" width="48" height="11" rx="5.5"/>
+          <rect x="126" y="194" width="48" height="11" rx="5.5"/>
+          <rect x="125" y="209" width="50" height="11" rx="5.5"/>
+          <rect x="125" y="224" width="50" height="11" rx="5.5"/>
+          <rect x="124" y="239" width="52" height="11" rx="5.5"/>
+          <rect x="124" y="254" width="52" height="11" rx="5.5"/>
+          <rect x="123" y="269" width="54" height="11" rx="5.5"/>
         </g>
-        <g>
-          <rect x="70" y="204" width="50" height="11" rx="5.5" fill="url(#glomb)"/>
-          <rect x="69" y="219" width="52" height="11" rx="5.5" fill="url(#glomb)"/>
-          <rect x="68" y="234" width="54" height="11" rx="5.5" fill="url(#glomb)"/>
-          <rect x="68" y="249" width="54" height="11" rx="5.5" fill="url(#glomb)"/>
-          <rect x="69" y="264" width="52" height="11" rx="5.5" fill="url(#glomb)"/>
+        <!-- rachis lombaire L1–L5 -->
+        <g stroke="#003366" stroke-width="1.4">
+          <rect x="120" y="285" width="60" height="13" rx="6.5" fill="#f59e0b" fill-opacity=".85"/>
+          <rect x="119" y="302" width="62" height="13" rx="6.5" fill="#f59e0b" fill-opacity=".85"/>
+          <rect x="118" y="319" width="64" height="13" rx="6.5" fill="#f59e0b" fill-opacity=".85"/>
+          <rect x="118" y="336" width="64" height="13" rx="6.5" fill="#f59e0b" fill-opacity=".85"/>
+          <rect x="119" y="353" width="62" height="13" rx="6.5" fill="#f59e0b" fill-opacity=".85"/>
         </g>
-        <text x="128" y="235" font-family="DM Mono,monospace" font-size="10" fill="#FBBF24">LOMBAIRE</text>
-        <text x="128" y="247" font-family="DM Sans,sans-serif" font-size="9" fill="#6B8DB5">le bas du dos</text>
-        <path d="M74 279 L116 279 L104 312 L86 312 Z" fill="#1A3050" stroke="#2E4D75" stroke-width="1.5"/>
-        <circle cx="58" cy="255" r="7" fill="#F43F5E" opacity="0.9"/>
-        <path d="M58 255 C 46 258, 42 266, 40 278" stroke="#F43F5E" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <text x="8" y="250" font-family="DM Sans,sans-serif" font-size="9" fill="#B0C4DB">hernie</text>
-        <text x="8" y="261" font-family="DM Sans,sans-serif" font-size="9" fill="#B0C4DB">discale</text>
+        <!-- sacrum -->
+        <path d="M126 372 L174 372 L160 412 L140 412 Z" fill="none" stroke="#003366" stroke-width="2"/>
+        <!-- disque en souffrance (hernie) -->
+        <ellipse cx="188" cy="329" rx="8" ry="5.5" fill="#e5484d"/>
+        <path d="M195 333 C 206 341, 210 355, 209 371" stroke="#e5484d" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".75"/>
+        <!-- cotes / annotations façon imagerie -->
+        <g font-family="DM Mono,monospace" font-size="11" fill="#003366">
+          <line x1="212" y1="58" x2="212" y2="129" stroke="#1abc9c" stroke-width="1.2"/>
+          <line x1="207" y1="58" x2="217" y2="58" stroke="#1abc9c" stroke-width="1.2"/>
+          <line x1="207" y1="129" x2="217" y2="129" stroke="#1abc9c" stroke-width="1.2"/>
+          <text x="224" y="90" fill="#149a80">C1–C7</text>
+          <text x="224" y="104" font-size="9.5" fill="#6b7280">rachis cervical</text>
+          <line x1="212" y1="285" x2="212" y2="366" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="207" y1="285" x2="217" y2="285" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="207" y1="366" x2="217" y2="366" stroke="#f59e0b" stroke-width="1.2"/>
+          <text x="224" y="320" fill="#b47408">L1–L5</text>
+          <text x="224" y="334" font-size="9.5" fill="#6b7280">rachis lombaire</text>
+          <text x="228" y="376" font-size="9.5" fill="#e5484d">hernie</text>
+          <text x="228" y="388" font-size="9.5" fill="#e5484d">discale</text>
+          <line x1="222" y1="372" x2="197" y2="335" stroke="#e5484d" stroke-width="1" stroke-dasharray="3 3"/>
+        </g>
       </svg>
     </div>
   </div>
 </header>
 
-<div class="wrap chat-zone">
+<div class="wrap chat-zone" id="evaluation">
   <div class="chat" aria-live="polite">
     <div class="chat-head">
-      <span class="dot" aria-hidden="true"></span>
+      <span class="dot"></span>
       <div>
         <div class="t">Assistant d'orientation</div>
         <div class="s">Anonyme · Mémoire temporaire uniquement · Ne remplace pas un avis médical</div>
       </div>
     </div>
     <div class="chat-body" id="chat"></div>
-  </div>
+      </div>
 </div>
 
 <section>
-  <div class="wrap">
-    <div class="eyebrow">L'objectif</div>
-    <h2>Mieux orienter, plus vite</h2>
-    <p class="lead">Face à une douleur du dos ou du cou, il est difficile de savoir s'il faut consulter en urgence, rapidement, ou simplement prendre rendez-vous. Cet outil recueille votre situation, recherche les signes qui comptent, et propose le circuit adapté.</p>
-    <div class="cards">
-      <div class="card">
-        <svg width="72" height="56" viewBox="0 0 72 56" aria-hidden="true">
-          <rect x="20" y="4" width="32" height="12" rx="6" fill="#2E4D75"/>
-          <ellipse cx="36" cy="24" rx="17" ry="7" fill="#38BDF8"/>
-          <ellipse cx="55" cy="27" rx="6" ry="5" fill="#F43F5E"/>
-          <path d="M60 30 C 66 36, 67 44, 66 52" stroke="#F43F5E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <rect x="20" y="34" width="32" height="12" rx="6" fill="#2E4D75"/>
-        </svg>
-        <h3>Décrire</h3><p>Vous indiquez la région concernée (cou ou bas du dos), votre profil et vos symptômes avec vos propres mots.</p>
-      </div>
-      <div class="card">
-        <svg width="72" height="56" viewBox="0 0 72 56" aria-hidden="true">
-          <rect x="6" y="40" width="12" height="12" rx="3" fill="#10B981"/>
-          <rect x="22" y="30" width="12" height="22" rx="3" fill="#F59E0B"/>
-          <rect x="38" y="18" width="12" height="34" rx="3" fill="#F97316"/>
-          <rect x="54" y="6" width="12" height="46" rx="3" fill="#F43F5E"/>
-        </svg>
-        <h3>Évaluer</h3><p>Un recueil structuré puis un échange avec l'assistant recherchent les signes d'alarme reconnus et déterminent un niveau d'urgence&nbsp;: immédiat, 24-48&nbsp;h, 48-72&nbsp;h, médecin traitant ou suivi.</p>
-      </div>
-      <div class="card">
-        <svg width="72" height="56" viewBox="0 0 72 56" aria-hidden="true">
-          <rect x="14" y="4" width="34" height="46" rx="4" fill="#fff" stroke="#2E4D75" stroke-width="2"/>
-          <line x1="20" y1="14" x2="42" y2="14" stroke="#94A3B8" stroke-width="2"/>
-          <line x1="20" y1="22" x2="42" y2="22" stroke="#94A3B8" stroke-width="2"/>
-          <line x1="20" y1="30" x2="36" y2="30" stroke="#94A3B8" stroke-width="2"/>
-          <circle cx="52" cy="40" r="12" fill="#38BDF8"/>
-          <path d="M52 34 v9 m0 0 l-4 -4 m4 4 l4 -4" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        </svg>
-        <h3>Transmettre</h3><p>Un rapport PDF est généré <strong>dans votre navigateur</strong>&nbsp;: vous choisissez de l'envoyer au chirurgien pour préparer la consultation d'avis chirurgical.</p>
+  <div class="wrap reveal">
+    <div class="eyebrow">Comment lire votre résultat</div>
+    <h2>Cinq niveaux d'orientation</h2>
+    <p class="lead">À l'issue de l'évaluation, votre situation est classée dans l'un de ces niveaux — du plus urgent au suivi simple.</p>
+    <div class="frise">
+      <div class="frise-bar"></div>
+      <div class="frise-grid">
+        <div class="niveau n1">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e5484d" stroke-width="2"><path d="M12 2 L22 20 L2 20 Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.8" fill="#e5484d"/></svg>
+          <div class="delai">Immédiat</div>
+          <h3>15 / Urgences</h3>
+          <p>Signes nécessitant un bilan hospitalier sans attendre&nbsp;: troubles urinaires, fièvre, paralysie, accident grave récent.</p>
+        </div>
+        <div class="niveau n2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3.5 2"/></svg>
+          <div class="delai">24 – 48 h</div>
+          <h3>Avis chirurgical rapide</h3>
+          <p>Perte de force, maladresse des mains ou troubles de la marche&nbsp;: consultation avec un chirurgien du rachis sous 24 à 48&nbsp;heures.</p>
+        </div>
+        <div class="niveau n3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1abc9c" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/><path d="M8 15 l2.5 2.5 L16 12.5"/></svg>
+          <div class="delai">48 – 72 h</div>
+          <h3>Avis chirurgical programmé</h3>
+          <p>Douleur intense résistante, contexte particulier&nbsp;: consultation d'avis chirurgical sous 48 à 72&nbsp;heures, IRM organisée si besoin.</p>
+        </div>
+        <div class="niveau n4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9d9d9d" stroke-width="2"><path d="M12 3 C7 3 4 6.5 4 10.5 C4 14 6.5 16 8 17.5 L8 21 L16 21 L16 17.5 C17.5 16 20 14 20 10.5 C20 6.5 17 3 12 3 Z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+          <div class="delai">Sans urgence</div>
+          <h3>Médecin traitant / Suivi</h3>
+          <p>La plupart des douleurs aiguës du rachis relèvent d'abord du médecin traitant, ou d'un suivi programmé si elles sont anciennes et stables.</p>
+        </div>
       </div>
     </div>
     <div class="callout">
@@ -297,18 +351,51 @@ footer a{color:var(--sky-400)}
 </section>
 
 <section>
-  <div class="wrap">
+  <div class="wrap reveal">
+    <div class="eyebrow">Pathologies concernées</div>
+    <h2>Ce que cet outil aide à orienter</h2>
+    <p class="lead">Pour comprendre chaque pathologie en détail — symptômes, traitements, chirurgie — consultez les fiches complètes rédigées par l'équipe sur rachis.paris.</p>
+    <div class="pathos">
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-lombaire/hernie-discale-lombaire-symptomes/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><rect x="8" y="6" width="24" height="8" rx="4" fill="none" stroke="#003366" stroke-width="1.8"/><ellipse cx="20" cy="19" rx="13" ry="4.5" fill="#1abc9c" fill-opacity=".85"/><ellipse cx="33" cy="21" rx="4.5" ry="3.5" fill="#e5484d"/><rect x="8" y="26" width="24" height="8" rx="4" fill="none" stroke="#003366" stroke-width="1.8"/></svg>
+        <span><b>Hernie discale</b><span>Le disque déborde et comprime une racine nerveuse.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-lombaire/la-stenose-lombaire/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="13" fill="none" stroke="#003366" stroke-width="1.8"/><circle cx="20" cy="20" r="5" fill="#f59e0b" fill-opacity=".9"/><path d="M12 12 A 11 11 0 0 1 28 12" stroke="#e5484d" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        <span><b>Canal lombaire étroit</b><span>Le canal se rétrécit et fatigue les jambes à la marche.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-cervical/nevralgie-cervico-brachiale-causes/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><rect x="16" y="4" width="9" height="5" rx="2.5" fill="#1abc9c"/><rect x="15" y="11" width="10" height="5" rx="2.5" fill="#1abc9c"/><path d="M20 18 C 20 24, 28 24, 30 32" stroke="#e5484d" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M28 29 l2 3 l3 -1.5" stroke="#e5484d" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span><b>Névralgie cervico-brachiale</b><span>La « sciatique du bras »&nbsp;: douleur du cou vers la main.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-lombaire/cruralgie-sciatique/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><rect x="15" y="4" width="10" height="6" rx="3" fill="#f59e0b"/><path d="M20 12 C 20 20, 14 22, 14 30 L 14 36" stroke="#e5484d" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M12 33 l2 3 l3 -1" stroke="#e5484d" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <span><b>Sciatique &amp; cruralgie</b><span>Douleur du bas du dos irradiant dans la jambe.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-lombaire/fracture-tassement-vertebre/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><rect x="9" y="7" width="22" height="7" rx="3.5" fill="none" stroke="#003366" stroke-width="1.8"/><path d="M9 24 L31 24 L28 18 L12 18 Z" fill="#f59e0b" fill-opacity=".9" stroke="#b47408" stroke-width="1.2"/><rect x="9" y="28" width="22" height="7" rx="3.5" fill="none" stroke="#003366" stroke-width="1.8"/></svg>
+        <span><b>Tassement vertébral</b><span>La vertèbre fragilisée se tasse, souvent après 60 ans.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+      <a class="patho" href="https://rachis.paris/pathologies-problemes-de-dos/le-rachis-cervical/myelopathie-cervicale-definition/" rel="noopener">
+        <svg width="40" height="40" viewBox="0 0 40 40"><rect x="15" y="5" width="10" height="5" rx="2.5" fill="#1abc9c"/><rect x="14" y="12" width="12" height="5" rx="2.5" fill="#1abc9c"/><path d="M20 19 v7" stroke="#003366" stroke-width="2"/><path d="M14 30 q3 -4 6 0 q3 4 6 0" stroke="#e5484d" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        <span><b>Myélopathie cervicale</b><span>La moelle comprimée&nbsp;: mains maladroites, marche instable.</span><br><span class="lien">Lire la fiche →</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
     <div class="eyebrow">Transparence</div>
     <h2>Qui sommes-nous, et vos données</h2>
     <div class="about">
       <div>
         <h3>Un espace créé par un chirurgien du rachis</h3>
-        <p>Cet espace est créé par le <strong>Dr Raphaël Jameson</strong>, chirurgien orthopédiste spécialiste du rachis, membre de l'<strong>Espace Francilien du Rachis</strong>. Pour l'information complète sur les pathologies de la colonne vertébrale et l'équipe&nbsp;: <a href="https://rachis.paris" rel="noopener">rachis.paris</a>.</p>
+        <p>Cet espace est créé par le <strong>Dr Raphaël Jameson</strong>, chirurgien orthopédiste spécialiste du rachis, membre de l'<strong>Espace Francilien du Rachis</strong>. Pour l'information complète sur les pathologies de la colonne vertébrale et l'équipe&nbsp;: <a href="https://rachis.paris">rachis.paris</a>.</p>
       </div>
       <div>
         <h3>Aucune donnée nominative enregistrée</h3>
-        <p>Vos réponses restent dans la <strong>mémoire temporaire de votre navigateur</strong> et sont effacées à la fermeture de la page&nbsp;: rien n'est enregistré par le site. Le rapport PDF est généré <strong>localement, sur votre appareil</strong> — seuls les messages que vous choisissez d'envoyer à un praticien quittent votre appareil.</p>
-        <p style="margin-top:8px">Des statistiques d'usage <strong>anonymes et agrégées</strong> (nombre de visites, répartition des orientations) sont mesurées pour améliorer le service&nbsp;; elles ne contiennent ni votre identité, ni vos réponses, ni votre adresse IP. Les échanges avec l'assistant sont analysés par une intelligence artificielle (API Claude, Anthropic) uniquement le temps de générer la réponse&nbsp;: <strong>aucune donnée nominative n'est enregistrée</strong> et l'assistant n'a pas le droit de vous demander votre identité.</p>
+        <p>Vos réponses restent dans la <strong>mémoire temporaire de votre navigateur</strong> et sont effacées à la fermeture de la page. Le rapport PDF est généré <strong>localement, sur votre appareil</strong>. Des statistiques d'usage <strong>anonymes et agrégées</strong> sont mesurées pour améliorer le service&nbsp;; elles ne contiennent ni votre identité, ni vos réponses, ni votre adresse IP.</p>
         <span class="pill">Anonyme</span><span class="pill">Sans inscription</span><span class="pill">Aucun stockage</span><span class="pill">PDF généré localement</span>
       </div>
     </div>
@@ -319,7 +406,7 @@ footer a{color:var(--sky-400)}
   <div class="wrap">
     <span class="foot-badge">Version d'essai — en cours de validation médicale</span>
     <p>Urgence'Rachis est un outil d'orientation. Il ne constitue pas un avis médical, ne pose aucun diagnostic et ne remplace ni une consultation, ni un appel au 15 en cas d'urgence. Au moindre doute, rendez-vous aux urgences les plus proches de votre domicile.</p>
-    <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris" rel="noopener">rachis.paris</a></p>
+    <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris">rachis.paris</a></p>
   </div>
 </footer>
 
@@ -339,8 +426,16 @@ function stat(ev){ try{ fetch("/api/stat",{method:"POST",headers:{"content-type"
 
 /* ============ PRIMITIVES DE CHAT ============ */
 const chat = document.getElementById("chat");
-function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;chat.appendChild(d);scrollChat();}
-function userMsg(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;chat.appendChild(d);scrollChat();}
+function row(role,el){
+  const r=document.createElement("div");r.className="row "+role;
+  const a=document.createElement("div");a.className="avatar";a.textContent=role==="bot"?"✚":"VOUS";
+  const b=document.createElement("div");b.className="bulle";
+  const q=document.createElement("div");q.className="qui";q.textContent=role==="bot"?"Assistant":"Vous";
+  b.appendChild(q);b.appendChild(el);r.appendChild(a);r.appendChild(b);
+  chat.appendChild(r);scrollChat();
+}
+function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;row("bot",d);}
+function userMsg(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;row("user",d);}
 function scrollChat(){chat.parentElement.scrollTop=chat.parentElement.scrollHeight;}
 function typing(on){
   let t=document.getElementById("typing");
@@ -445,9 +540,24 @@ function carteSuivi(){
    <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, douleur brutale après un choc), reprenez cette évaluation ou appelez le 15.</p>`,
   [{href:SITE,label:"Continuer sur rachis.paris"},{pdf:true,label:"📄 Télécharger le PDF"}]);
 }
+/* ---- Option A : trace technique anonyme (améliorer l'organigramme) — DÉSACTIVÉE en attente de la mention de transparence validée ---- */
+const TRACE_ACTIVE=false;
+function sendTrace(niveau,motif){
+  if(!TRACE_ACTIVE) return;
+  try{
+    const questionsIA=S.messages.filter(m=>m.role==="assistant").map(m=>m.content.replace(/<sortie>[\s\S]*<\/sortie>/,"").trim()).filter(Boolean);
+    const age=parseInt(S.age,10);
+    fetch("/api/trace",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({
+      region:S.region,sexe:S.sexe,tranche_age:isNaN(age)?null:Math.floor(age/10)*10,
+      irradiation:S.irradiation,anciennete:S.anciennete,evolution:S.evolution,
+      imagerie:S.imagerie,souhait:S.souhait,signes:S.signes,
+      nb_messages:S.messages.length,questions_ia:questionsIA,niveau,motif})});
+  }catch(e){}
+}
 function carteParNiveau(sortie){
   const n=(sortie&&sortie.niveau)||"";const m=(sortie&&sortie.motif)||"";
   S.synthese=(sortie&&sortie.synthese)||"";
+  sendTrace(n||"suivi",m);
   if(n==="15") return carte15();
   if(n==="urgences") return carteUrgences(m==="trauma_urgences"?m:(m==="paralysie_urgences"?"paralysie":m||"fievre"));
   if(n==="24h") return carte24h(m||"force");
@@ -463,7 +573,7 @@ function start(){
   setTimeout(qRegion,420);
 }
 function qRegion(){
-  bot(`Votre problème concerne-t-il le <strong>rachis cervical</strong>, c'est-à-dire le cou, ou le <strong>rachis lombaire</strong>, c'est-à-dire le bas du dos&nbsp;?`);
+  bot(`Votre problème concerne-t-il le <strong>rachis cervical</strong>, c'est-à-dire le cou, ou le <strong>rachis thoracique ou lombaire</strong>, c'est-à-dire le milieu ou le bas du dos&nbsp;?`);
   const w=document.createElement("div");w.className="region-cards";
   const mk=(svg,titre,sous,val,label)=>{
     const b=document.createElement("button");b.className="region-card";
@@ -471,10 +581,10 @@ function qRegion(){
     b.onclick=()=>{w.remove();userMsg(label);S.region=val;stat("region_"+val);setTimeout(qSexe,300);};
     return b;
   };
-  const svgC=`<svg width="40" height="56" viewBox="0 0 40 56" aria-hidden="true"><circle cx="20" cy="9" r="7" fill="#1A3050"/><rect x="13" y="19" width="14" height="5" rx="2.5" fill="#38BDF8"/><rect x="12" y="26" width="16" height="5" rx="2.5" fill="#38BDF8"/><rect x="12" y="33" width="16" height="5" rx="2.5" fill="#38BDF8"/><rect x="11" y="40" width="18" height="5" rx="2.5" fill="#38BDF8"/><rect x="11" y="47" width="18" height="5" rx="2.5" fill="#CBD5E1"/></svg>`;
-  const svgL=`<svg width="40" height="56" viewBox="0 0 40 56" aria-hidden="true"><rect x="12" y="2" width="16" height="5" rx="2.5" fill="#CBD5E1"/><rect x="11" y="9" width="18" height="6" rx="3" fill="#F59E0B"/><rect x="10" y="17" width="20" height="6" rx="3" fill="#F59E0B"/><rect x="10" y="25" width="20" height="6" rx="3" fill="#F59E0B"/><rect x="11" y="33" width="18" height="6" rx="3" fill="#F59E0B"/><path d="M13 42 L27 42 L23 54 L17 54 Z" fill="#1A3050"/></svg>`;
+  const svgC=`<svg width="40" height="56" viewBox="0 0 40 56" aria-hidden="true"><circle cx="20" cy="9" r="7" fill="none" stroke="#003366" stroke-width="2"/><rect x="13" y="19" width="14" height="5" rx="2.5" fill="#1abc9c"/><rect x="12" y="26" width="16" height="5" rx="2.5" fill="#1abc9c"/><rect x="12" y="33" width="16" height="5" rx="2.5" fill="#1abc9c"/><rect x="11" y="40" width="18" height="5" rx="2.5" fill="#1abc9c"/><rect x="11" y="47" width="18" height="5" rx="2.5" fill="#d7dbe0"/></svg>`;
+  const svgL=`<svg width="40" height="56" viewBox="0 0 40 56" aria-hidden="true"><rect x="12" y="2" width="16" height="5" rx="2.5" fill="#d7dbe0"/><rect x="11" y="9" width="18" height="6" rx="3" fill="#f59e0b"/><rect x="10" y="17" width="20" height="6" rx="3" fill="#f59e0b"/><rect x="10" y="25" width="20" height="6" rx="3" fill="#f59e0b"/><rect x="11" y="33" width="18" height="6" rx="3" fill="#f59e0b"/><path d="M13 42 L27 42 L23 54 L17 54 Z" fill="none" stroke="#003366" stroke-width="2"/></svg>`;
   w.appendChild(mk(svgC,"Rachis cervical","Le cou — douleur pouvant irradier vers le bras","cervical","Rachis cervical (le cou)"));
-  w.appendChild(mk(svgL,"Rachis lombaire","Le bas du dos — douleur pouvant irradier vers la jambe","lombaire","Rachis lombaire (le bas du dos)"));
+  w.appendChild(mk(svgL,"Rachis thoracique ou lombaire","Le milieu ou le bas du dos — douleur pouvant irradier vers la jambe","lombaire","Rachis thoracique ou lombaire (le milieu ou le bas du dos)"));
   chat.appendChild(w);scrollChat();
 }
 function qSexe(){
@@ -553,6 +663,7 @@ function qAlarme(){
     ["force","Perte de force partielle ou récente de la jambe ou du pied (pied qui accroche, jambe qui lâche)"],
     ["trauma","Ma douleur fait suite à un traumatisme (accident, chute, choc, faux mouvement)"],
     ["cancer","Cancer diagnostiqué ou traité au cours des 5 dernières années"],
+    ["osteo","J'ai de l'ostéoporose, un traitement pour la solidité des os, ou je prends de la cortisone au long cours"],
     ["douleurMax","Douleur très intense malgré les médicaments (nuits impossibles)"]
   ];
   const w=document.createElement("div");w.className="checklist";
@@ -599,6 +710,7 @@ async function courtCircuits(){
     return carte24h("paralysie_lendemain");
   }
   if(has("trauma")) return qTraumaType();
+  if(has("osteo")&&S.region==="lombaire") return carte72h("tassement");
   qDescription();
 }
 function qTraumaType(){
@@ -677,28 +789,28 @@ function buildPDF(){
     doc.splitTextToSize(txt,W-2*M).forEach(r=>{if(y>278){doc.addPage();y=20;}doc.text(r,M,y);y+=(opt.lh||5.4);});
     y+=opt.gap||0;
   };
-  doc.setFillColor(11,22,40);doc.rect(0,0,W,26,"F");
+  doc.setFillColor(0,51,102);doc.rect(0,0,W,26,"F");
   doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(14);
   doc.text("Urgence'Rachis — Rapport d'orientation",M,11);
-  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(176,196,219);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(176,208,230);
   doc.text("Espace Francilien du Rachis · Version d'essai · Document généré localement par le patient",M,18);
   y=36;
   const now=new Date();
   line("Généré le "+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" à "+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),{size:9,color:[100,116,139],gap:4});
-  line("ORIENTATION PROPOSÉE",{bold:true,size:11,color:[11,22,40]});
-  line(S.orientation||"—",{bold:true,size:12,color:[244,63,94],gap:1});
+  line("ORIENTATION PROPOSÉE",{bold:true,size:11,color:[0,51,102]});
+  line(S.orientation||"—",{bold:true,size:12,color:[229,72,77],gap:1});
   if(S.synthese) line("Synthèse de l'assistant : "+S.synthese,{size:10,gap:4}); else y+=4;
-  line("PROFIL",{bold:true,size:11,color:[11,22,40]});
-  line("Région : "+(S.region==="cervical"?"Rachis cervical (cou)":"Rachis lombaire (bas du dos)"));
+  line("PROFIL",{bold:true,size:11,color:[0,51,102]});
+  line("Région : "+(S.region==="cervical"?"Rachis cervical (cou)":"Rachis thoracique ou lombaire (milieu ou bas du dos)"));
   line("Sexe : "+(S.sexe||"—")+"   ·   Âge : "+(S.age||"—")+" ans"+(S.lateralite?("   ·   "+S.lateralite):""));
   line("Irradiation : "+(S.irradiation||"—"));
   line("Ancienneté : "+(S.anciennete||"—")+"   ·   Évolution : "+(S.evolution||"—"));
   line("Imagerie : "+(S.imagerie||"—")+(S.imagerieRecente?(" (moins de 6 mois : "+S.imagerieRecente+")"):""));
   line("Souhait exprimé : "+(S.souhait==="rdv"?"Rendez-vous chirurgical":(S.souhait==="irm"?"Rendez-vous chirurgical + IRM rapide":"Un avis d'abord")),{gap:4});
-  line("DESCRIPTION PAR LE PATIENT",{bold:true,size:11,color:[11,22,40]});
+  line("DESCRIPTION PAR LE PATIENT",{bold:true,size:11,color:[0,51,102]});
   line(S.description||"(non renseignée)",{gap:4});
-  line("SIGNES SIGNALÉS",{bold:true,size:11,color:[11,22,40]});
-  const dico={sphincter:"Troubles urinaires / anesthésie du siège",fievre:"Fièvre ou frissons associés",paralysie:"Paralysie complète et brutale d'un membre",force:"Perte de force partielle ou récente",myelo:"Maladresse des mains / troubles de la marche / signe de Lhermitte",trauma:"Contexte traumatique",trauma_ancien:"Traumatisme haute énergie > 24 h",tassement:"Trauma faible énergie — susp. tassement",cancer:"Cancer < 5 ans",douleurMax:"Douleur hyperalgique résistante"};
+  line("SIGNES SIGNALÉS",{bold:true,size:11,color:[0,51,102]});
+  const dico={sphincter:"Troubles urinaires / anesthésie du siège",fievre:"Fièvre ou frissons associés",paralysie:"Paralysie complète et brutale d'un membre",force:"Perte de force partielle ou récente",myelo:"Maladresse des mains / troubles de la marche / signe de Lhermitte",trauma:"Contexte traumatique",trauma_ancien:"Traumatisme haute énergie > 24 h",tassement:"Trauma faible énergie — susp. tassement",osteo:"Terrain ostéoporotique (ostéoporose, traitement osseux ou corticothérapie au long cours)",cancer:"Cancer < 5 ans",douleurMax:"Douleur hyperalgique résistante"};
   line(S.signes.length?S.signes.map(s=>"• "+(dico[s]||s)).join("\n"):"Aucun signe d'alarme coché",{gap:6});
   doc.setDrawColor(226,232,240);doc.line(M,y,W-M,y);y+=6;
   line("Ce rapport a été généré automatiquement par l'outil d'orientation Urgence'Rachis à partir des déclarations du patient. Évaluation non médicale, fournie à titre indicatif : elle ne constitue ni un avis médical ni un diagnostic. Document destiné à être transmis par le patient lui-même au praticien de son choix pour préparer une consultation d'avis chirurgical. En cas d'aggravation ou de doute : appeler le 15.",{size:8.5,color:[100,116,139]});
@@ -722,6 +834,8 @@ async function sharePDF(){
   setTimeout(()=>{window.location.href=`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;},900);
 }
 
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vu");io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
 start();
 </script>
 </body>
