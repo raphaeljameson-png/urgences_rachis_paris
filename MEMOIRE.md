@@ -2,7 +2,7 @@
 
 > Fichier de passation pour Claude. Dans une nouvelle conversation, demander :
 > « Lis MEMOIRE.md du repo raphaeljameson-png/urgences_rachis_paris ».
-> Dernière mise à jour : 25 juillet 2026 (soir) — **v2 en prod + chaîne email Gmail validée**.
+> Dernière mise à jour : 25 juillet 2026 (nuit) — **PASSE 1 EN LIGNE (charte A + règles tassement)**.
 
 ## RÈGLE DE TRAVAIL ABSOLUE
 Avant de coder ou de pousser quoi que ce soit : **discuter et faire valider
@@ -13,109 +13,104 @@ Les textes affichés aux patients sont validés **mot à mot** par le Dr Jameson
 - Projet du **Dr Raphaël Jameson**, chirurgien orthopédiste du rachis,
   **Espace Francilien du Rachis** (avec Dr Mayalen Lamerain et Dr Christophe Travert ;
   ⚠️ le Dr Robin Arvieu ne doit PAS apparaître).
-- Objet : **triage des douleurs du rachis** vers 15 / urgences / avis chirurgical
-  24-48 h / 48-72 h / médecin traitant / suivi.
-- **Stratégie assumée (dixit Raphael)** : le site est l'entonnoir de recrutement de
-  l'activité chirurgicale — faire remonter vite les indications chirurgicales
-  potentielles, renvoyer vers le médecin traitant les pathologies non chirurgicales.
-- Site principal : rachis.paris (WordPress, thème Bridge/Qode, messagerie Google
-  Workspace, Raphael administrateur). État : version d'essai, noindex, badge.
+- Objet : **triage des douleurs du rachis** → 15 / urgences / 24-48h / 48-72h / mt / suivi.
+- **Stratégie assumée (dixit Raphael)** : entonnoir de recrutement de l'activité
+  chirurgicale — faire remonter les indications chirurgicales potentielles,
+  renvoyer au médecin traitant le non-chirurgical.
+- Site principal : rachis.paris (WordPress Bridge/Qode, Google Workspace, Raphael admin).
+- État : version d'essai, noindex, badge « Version d'essai ».
 
 ## INFRA — ✅ OPÉRATIONNELLE
-- Repo GitHub **privé** : `raphaeljameson-png/urgences_rachis_paris` (MCP : lecture/push, pas de création).
+- Repo GitHub **privé** : `raphaeljameson-png/urgences_rachis_paris` (MCP : lecture/push).
 - Cloudflare Workers (compte dr.jameson@rachis.paris), déploiement auto sur push main.
 - **URL prod : https://urgences-rachis-paris.dr-jameson.workers.dev**
-- KV `URGENCE_KV` : ID `8578258e537e45998f97f0ef80685f6f`.
-- Secrets en place : `ANTHROPIC_API_KEY` (clé « urgence-rachis », ⚠️ expire 24/08/2026 ;
-  crédits OK — piège rencontré : crédits et clé dans la même organisation, délai
-  d'affichage possible), `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`.
-- **Chaîne email Gmail VALIDÉE le 25/07 au soir** : envoi depuis le Worker via API
-  Gmail (OAuth refresh token, projet Google Cloud `urgence-rachis`, écran de
-  consentement **Interne** — jetons permanents), expéditeur alias
-  **`urgences@rachis.paris`** (avec un S), destinataire dr.jameson@rachis.paris,
-  pièces jointes OK, Reply-To OK. Limite : 25 Mo/message (~17 Mo utiles).
-  Fonctions worker : gmailAccessToken/gmailSend. Route de test retirée après succès.
-  Pièges résolus : btoa→b64 UTF-8 ; invalid_grant = refresh token à re-générer
-  via oauthplayground AVEC ses propres identifiants (roue ⚙️).
-- Domaine urgence-rachis.fr : PAS ENCORE acheté (Cloudflare Registrar, ~11 €/an).
-- `STATS_KEY` : pas posé (optionnel).
+- KV `URGENCE_KV` ID `8578258e537e45998f97f0ef80685f6f`.
+- Secrets : `ANTHROPIC_API_KEY` (⚠️ expire 24/08/2026), `GMAIL_CLIENT_ID`,
+  `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`.
+- **Chaîne email Gmail VALIDÉE** : envoi Worker via API Gmail (OAuth refresh token,
+  projet GCloud `urgence-rachis`, consentement **Interne** = jetons permanents),
+  alias expéditeur **`urgences@rachis.paris` (avec un S)**, PJ OK, Reply-To OK,
+  25 Mo/message (~17 Mo utiles). Fonctions : gmailAccessToken/gmailSend.
+  Pièges résolus : b64 UTF-8 (jamais btoa brut) ; invalid_grant = re-générer le
+  refresh token via oauthplayground AVEC ses propres identifiants (roue ⚙️).
+- Domaine urgence-rachis.fr : PAS acheté. `STATS_KEY` : pas posé. Web Analytics : non.
 
-## ARCHITECTURE v2 (en production)
-1. **`src/worker.js`** : `/api/chat` proxy Claude (Opus 4.8 → Sonnet 4.6 >50 €/mois,
-   compteur KV spend:YYYY-MM) ; 12 règles verrouillées + signal
-   `<sortie>{"niveau","motif","synthese"}</sortie>` ; `/api/now` ; `/api/stat`
-   (compteurs anonymes) ; `/api/stats?key=` ; IP hachées SHA-256 salées ;
-   40 req/IP/jour ; module Gmail (gmailSend, pièces jointes MIME).
-2. **`public/index.html`** : parcours structuré → checklist par région →
-   court-circuits déterministes → description libre → conversation IA → cartes de
-   sortie à textes fixes ; PDF jsPDF local ; envoi actuel = Web Share/mailto
-   (⚠️ à remplacer par le formulaire intégré, voir chantier en cours).
-3. RGPD : stats agrégées anonymes uniquement, transparence affichée, IA sans
-   données nominatives. Web Analytics Cloudflare : pas encore activé.
+## PASSE 1 — ✅ EN LIGNE ET TESTÉE (25/07 soir)
+Refonte complète charte **« Blanc clinique »** (maquette A validée) :
+- Héros blanc, colonne vertébrale annotée façon imagerie (halos pulsants, C1-C7/L1-L5,
+  hernie), CTA turquoise « Commencer l'évaluation ».
+- Chat mis en avant : bord turquoise, ombre décroissante 3 couches + halo, voile radial.
+- **Bulles différenciées** : assistant = turquoise pâle + avatar ✚ + étiquette
+  ASSISTANT ; patient = marine texte blanc + avatar VOUS à droite.
+- Sections validées mot à mot : « Cinq niveaux d'orientation » (frise + 4 cartes) et
+  « Pathologies concernées » (6 vignettes, liens profonds rachis.paris :
+  hernie-discale-lombaire-symptomes, la-stenose-lombaire,
+  nevralgie-cervico-brachiale-causes, cruralgie-sciatique,
+  fracture-tassement-vertebre, myelopathie-cervicale-definition).
+- Région reformulée : « Rachis thoracique ou lombaire — le milieu ou le bas du dos ».
+- PDF rapport recoloré marine/turquoise.
+- ⚠️ Piège de push résolu : les `\n` dans les chaînes JS du HTML doivent être
+  doublés (`\\n`) dans le JSON des outils GitHub, sinon SyntaxError en prod.
 
-## TESTS VALIDÉS EN PROD (25/07)
-- IA : lumbago banal→mt ✅ · myélopathie→24h ✅ · détournement→recadrage exact ✅ ·
-  hyperalgique→72h ✅ · règle paralysie vérifiée via /api/now ✅ · IP hachées ✅
-- Email : test réel reçu dans la boîte (alias, PJ, corps) ✅
-- Micro-défaut connu : l'IA peut émettre question + sortie dans le même message
-  (le front gère ; ajustement prompt possible).
-- Reste : test mobile complet par Raphael (parcours + PDF).
+## RÈGLES MÉDICALES VERROUILLÉES (worker, prompt système)
+1-6, 8-12 : inchangées (sphincter→15 ; fièvre→urgences ; paralysie selon jour/heure
+serveur ; force→24h ; myélopathie cervical→24h ; trauma HE <24h→urgences sinon 72h ;
+cancer<5ans→72h ; hyperalgique→72h ; >6sem→72h ; aiguë simple→mt ; ancienne→suivi).
+**7 (étendue)** : trauma faible énergie OU terrain ostéoporotique (ostéoporose,
+traitement anti-ostéoporotique, corticothérapie au long cours) + douleur axiale aiguë
+thoracique/lombaire → 72h tassement MÊME SANS TRAUMATISME.
+**13 (nouvelle)** : ≥60 ans + douleur axiale thoracique/lombaire AIGUË ET BRUTALE,
+sans irradiation ni autre cause, même sans ostéoporose connue → 72h tassement
+(l'IA vérifie le caractère brutal avant de conclure).
+**Région** : thoracique assimilé au lombaire partout.
+**Fiches (niveau 1)** : l'IA connaît les 6 fiches rachis.paris et peut, MAX 1×/conv,
+signaler qu'une fiche existe — sans URL, sans contenu. (Niveaux 2/3 écartés.)
+**Front** : case checklist lombaire « J'ai de l'ostéoporose, un traitement pour la
+solidité des os, ou je prends de la cortisone au long cours » → court-circuit
+déterministe carte72h('tassement') (placé APRÈS trauma ; trauma_ancien+osteo → IA).
 
-## RÈGLES MÉDICALES VERROUILLÉES (ne jamais modifier sans le Dr Jameson)
-- Sphincter/anesthésie siège → 15 (court-circuit). Fièvre → urgences (court-circuit).
-- Paralysie brutale (heure serveur) : ven<12h→24h paralysie_jour_meme ;
-  ven≥12h ou samedi→urgences ; dim-jeu→24h paralysie_lendemain (court-circuit).
-- Force partielle→24h. Myélopathie (cervical seul)→24h+IRM.
-- Trauma HE<24h→urgences (court-circuit) ; >24h→72h trauma. Trauma FE→72h tassement.
-- Cancer<5 ans→72h cancer. Hyperalgique→72h. >6 sem/aggravation→72h persistante
-  (critères niveau 3 PROVISOIRES, passe 2 non tranchée).
-- Aiguë sans radiculalgie/trauma/signe→mt. Ancienne stable→suivi. Doute→plus urgent.
-- **NOUVELLE RÈGLE TASSEMENT (validée sur le principe, détails en cours)** :
-  terrain ostéoporotique (ostéoporose connue, traitement, cortisone au long cours)
-  + douleur axiale aiguë → **72h tassement même sans traumatisme** (indication
-  cimentoplastie potentielle). EN ATTENTE de Raphael : seuil ≥60 ans sans ostéoporose
-  connue ? lombaire uniquement ? libellé case checklist ? → PAS ENCORE CODÉE.
+## TESTS VALIDÉS EN PROD
+- lumbago banal→mt ✅ · myélopathie→24h ✅ · détournement→recadrage ✅ ·
+  hyperalgique→72h ✅ · **règle 13 : femme 68 ans, axiale brutale, pas d'ostéo →
+  IA pose LES bonnes questions puis 72h tassement + mention fiche niveau 1 ✅**
+- Email test réel reçu ✅ · syntaxe JS prod vérifiée (node --check) ✅
+- Micro-défaut connu : question+signal de sortie parfois dans le même message (front gère).
+- ⚠️ Test mobile complet par Raphael : TOUJOURS PENDING.
+
+## TRACES (option A) — CODÉE MAIS DÉSACTIVÉE
+- Worker : POST /api/trace opérationnel (champs filtrés/tronqués, AUCUN texte libre
+  patient, tranche d'âge par décennie, clé trace:YYYY-MM:uuid, TTL 12 mois).
+- Front : sendTrace() appelé dans carteParNiveau, gated par `const TRACE_ACTIVE=false`.
+- **Activation conditionnée à la validation par Raphael de la phrase de transparence** :
+  « Le déroulé technique de l'évaluation (réponses aux questions à choix multiples,
+  questions posées par l'assistant, orientation proposée) est conservé de façon
+  anonyme pour améliorer l'outil. Vos messages et descriptions libres ne sont jamais
+  conservés. » → puis : ajouter la phrase à la section Transparence + TRACE_ACTIVE=true.
+- Option B (verbatim + consentement coché, TTL 12 mois) documentée, bascule facile.
 
 ## DÉCISIONS PRODUIT ENTÉRINÉES
-- Pas de lien Doctolib caché ; canal = message au chirurgien avec rapport ;
-  Doctolib générique seulement carte mt. RDV = « consultation avec un chirurgien
-  du rachis pour un avis chirurgical ». Cartes à textes fixes. Synthèse IA
-  uniquement dans le PDF. Notes non médicales partout.
-- **Refonte graphique : MAQUETTE A « Clinique turquoise » retenue** (fond blanc,
-  marine #003366, turquoise #1abc9c — charte rachis.paris ; Montserrat/Raleway ;
-  colonne vertébrale annotée en héros ; frise des niveaux ; vignettes pathologies ;
-  boîte de dialogue mise en avant par ombre décroissante + halo ; bulles
-  différenciées assistant [turquoise pâle, avatar ✚] / patient [marine, avatar VOUS]).
-  Fichier d'aperçu : maquette-A-clinique.html (remis à Raphael). PAS ENCORE INTÉGRÉE.
-- **Formulaire d'envoi intégré (remplace le mailto)** — décisions actées : champs
-  nom, prénom, date de naissance, téléphone ET email obligatoires + message libre
-  + pièces jointes (compression photos côté client, ~17 Mo utiles max, limite
-  Gmail 25 Mo) + case de consentement ; rapport PDF joint AUTOMATIQUEMENT ;
-  envoi via gmailSend ; Worker ne stocke rien ; Reply-To = email patient.
-  Niveau de sécurité assumé : email standard, comme les sites de confrères
-  (transparence à réécrire en conséquence, validation mot à mot requise).
-  PAS ENCORE CODÉ.
-- Moteur IA : sujet Gemini ouvert (payant acceptable, gratuit NON — entraînement
-  sur données) ; architecture ENGINE prévue ; rien d'implémenté, décision en attente.
+- Canal = message au chirurgien avec rapport ; Doctolib générique seulement carte mt.
+- Cartes de sortie à textes fixes ; synthèse IA uniquement dans le PDF.
+- Formulaire d'envoi intégré (PASSE 2, PAS CODÉ) : nom, prénom, date de naissance,
+  téléphone ET email obligatoires + message libre + PJ (compression photos, ~17 Mo)
+  + case consentement ; PDF joint AUTOMATIQUEMENT ; Reply-To patient ; Worker ne
+  stocke rien ; sécurité « email standard » assumée. Textes formulaire + consentement
+  + transparence à soumettre MOT À MOT avant codage.
+- IA : Opus 4.8 → Sonnet 4.6 au-delà de 50 €/mois. Gemini : payant OK, gratuit NON —
+  rien d'implémenté, architecture ENGINE prévue, décision en attente.
 
-## PENDING — côté Raphael (BLOQUANTS pour la passe 1)
-1. **Validation mot à mot des 11 textes** des sections « Cinq niveaux
-   d'orientation » (1a-1e) et « Pathologies concernées » (2a-2g) — liste dans la
-   conversation du 25/07.
-2. **Règle tassement** : seuil ≥60 ans ? lombaire seul ? libellé de la case ?
-3. URLs exactes des fiches pathologies sur rachis.paris (liens profonds, sinon
-   liens génériques).
-4. Achat urgence-rachis.fr · test mobile · STATS_KEY/Web Analytics (non bloquants).
+## PENDING — Raphael
+1. **Phrase de transparence option A** (ci-dessus) → active les traces.
+2. **Test mobile complet** (parcours + PDF + affichage charte).
+3. Achat urgence-rachis.fr (~11 €/an, Cloudflare Registrar).
+4. Renouvellement ANTHROPIC_API_KEY avant le 24/08/2026.
+5. STATS_KEY / Web Analytics (optionnels).
 
-## PENDING — côté Claude (après validations)
-1. **PASSE 1** : intégration maquette A en prod + nouvelles sections + règle
-   tassement (checklist + règle 13 prompt IA) + PDF arbres décisionnels à jour.
-2. **PASSE 2** : formulaire d'envoi intégré (textes du formulaire + consentement
-   + nouvelle transparence à soumettre mot à mot AVANT codage).
+## PENDING — Claude
+1. **PASSE 2 : formulaire d'envoi** (soumettre textes mot à mot AVANT codage).
+2. Mettre à jour le **PDF des arbres décisionnels** (règles tassement/thoracique)
+   — sources /home/claude/urgence/arbres.py + build_pdf.py (conteneur, régénérables).
 3. Ajustement prompt (question+sortie simultanées) — mineur.
-4. Lancement : domaine, retirer noindex+badge, mentions légales/RGPD, SEO.
-
-## FICHIERS DE TRAVAIL (conteneur, non persistants)
-/home/claude/urgence/ (worker.js, index-v2.html, arbres.py…) ;
-maquettes A/B/C remises dans outputs ; PDF arbres décisionnels remis (à mettre à
-jour avec la règle tassement).
+4. Passe 2 des critères niveau 3 (jamais tranchée : seuil 4/6 sem, « traitement bien
+   conduit », EVA, IRM faite).
+5. Lancement : retirer noindex+badge, mentions légales/RGPD, SEO, maillage.
