@@ -435,6 +435,7 @@ footer a{color:var(--turquoise)}
 
 <script>
 /* ============ CONFIGURATION ============ */
+const NL = String.fromCharCode(10);
 const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
 const NOTE = "⚠️ Cette évaluation est <strong>non médicale</strong> et fournie à titre indicatif. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de doute&nbsp;: appelez le 15 ou rendez-vous aux urgences.";
@@ -724,7 +725,7 @@ function qAlarme(){
     S.signes=checked.filter(v=>v!=="aucun");
     const labels=items.filter(([v])=>S.signes.includes(v)).map(([,t])=>t);
     w.remove();go.remove();
-    userMsg(labels.length?labels.join("\n"):"Aucun de ces signes");
+    userMsg(labels.length?labels.join(NL):"Aucun de ces signes");
     setTimeout(courtCircuits,320);
   };
   chat.appendChild(w);chat.appendChild(go);scrollChat();
@@ -783,7 +784,7 @@ async function callIA(){
     if(r.status===429){bot("Le service a atteint sa limite d'utilisation pour aujourd'hui. En cas de doute sur votre état, appelez le 15 ou consultez votre médecin traitant.");return;}
     if(!r.ok) throw new Error("api");
     const data=await r.json();
-    if(data.reply){S.messages.push({role:"assistant",content:data.reply+(data.sortie?("\n<sortie>"+JSON.stringify(data.sortie)+"</sortie>"):"")});bot(escapeHtml(data.reply));}
+    if(data.reply){S.messages.push({role:"assistant",content:data.reply+(data.sortie?(NL+"<sortie>"+JSON.stringify(data.sortie)+"</sortie>"):"")});bot(escapeHtml(data.reply));}
     if(data.sortie){removeBar();carteParNiveau(data.sortie);}
     else if(S.messages.length>=28){removeBar();carteParNiveau({niveau:"mt"});}
     else showBar();
@@ -793,7 +794,7 @@ async function callIA(){
     showBar();
   }
 }
-function escapeHtml(t){const d=document.createElement("div");d.textContent=t;return d.innerHTML.replace(/\n/g,"<br>");}
+function escapeHtml(t){const d=document.createElement("div");d.textContent=t;return d.innerHTML.split(NL).join("<br>");}
 let bar=null;
 function showBar(){
   if(bar)return;
@@ -855,7 +856,7 @@ async function submitForm(){
   const err=t=>{g("feErr").textContent=t;};
   const nom=g("feNom").value.trim(),prenom=g("fePrenom").value.trim(),ddn=g("feDdn").value,tel=g("feTel").value.trim(),email=g("feEmail").value.trim();
   if(!nom||!prenom||!ddn||!tel||!email) return err("Merci de remplir tous les champs obligatoires (*).");
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err("L'adresse email semble invalide.");
+  if(email.indexOf("@")<1||email.indexOf(" ")>=0||email.lastIndexOf(".")<email.indexOf("@")) return err("L'adresse email semble invalide.");
   if(!g("feConsent").checked) return err("Merci de cocher la case de consentement pour permettre l'envoi.");
   err("");
   const btn=g("feSend");btn.disabled=true;btn.textContent="Envoi en cours…";
@@ -864,7 +865,7 @@ async function submitForm(){
     for(const file of g("feFiles").files){
       let dataB64,mimeType=file.type||"application/octet-stream",filename=file.name||"document";
       const comp=await compressImage(file);
-      if(comp){dataB64=comp;mimeType="image/jpeg";filename=filename.replace(/\.[^.]+$/,"")+".jpg";}
+      if(comp){dataB64=comp;mimeType="image/jpeg";const p=filename.lastIndexOf(".");filename=(p>0?filename.slice(0,p):filename)+".jpg";}
       else dataB64=await fileToB64(file);
       total+=dataB64.length*0.75;
       if(total>15*1024*1024) throw {taille:true};
@@ -919,7 +920,7 @@ function buildPDF(){
   line(S.description||"(non renseignée)",{gap:4});
   line("SIGNES SIGNALÉS",{bold:true,size:11,color:[0,51,102]});
   const dico={sphincter:"Troubles urinaires / anesthésie du siège",fievre:"Fièvre ou frissons associés",paralysie:"Paralysie complète et brutale d'un membre",force:"Perte de force partielle ou récente",myelo:"Maladresse des mains / troubles de la marche / signe de Lhermitte",trauma:"Contexte traumatique",trauma_ancien:"Traumatisme haute énergie > 24 h",tassement:"Trauma faible énergie — susp. tassement",osteo:"Terrain ostéoporotique (ostéoporose, traitement osseux ou corticothérapie au long cours)",cancer:"Cancer < 5 ans",douleurMax:"Douleur hyperalgique résistante"};
-  line(S.signes.length?S.signes.map(s=>"• "+(dico[s]||s)).join("\n"):"Aucun signe d'alarme coché",{gap:6});
+  line(S.signes.length?S.signes.map(s=>"• "+(dico[s]||s)).join(NL):"Aucun signe d'alarme coché",{gap:6});
   doc.setDrawColor(226,232,240);doc.line(M,y,W-M,y);y+=6;
   line("Ce rapport a été généré automatiquement par l'outil d'orientation Urgence'Rachis à partir des déclarations du patient. Évaluation non médicale, fournie à titre indicatif : elle ne constitue ni un avis médical ni un diagnostic. Document destiné à être transmis par le patient lui-même au praticien de son choix pour préparer une consultation d'avis chirurgical. En cas d'aggravation ou de doute : appeler le 15.",{size:8.5,color:[100,116,139]});
   return doc;
