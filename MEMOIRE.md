@@ -2,7 +2,7 @@
 
 > Fichier de passation pour Claude. Dans une nouvelle conversation, demander :
 > « Lis MEMOIRE.md du repo raphaeljameson-png/urgences_rachis_paris ».
-> Dernière mise à jour : 25 juillet 2026 (nuit) — **PASSE 1 EN LIGNE (charte A + règles tassement)**.
+> Dernière mise à jour : 26 juillet 2026 — **PASSES 1 ET 2 EN LIGNE ET TESTÉES**.
 
 ## RÈGLE DE TRAVAIL ABSOLUE
 Avant de coder ou de pousser quoi que ce soit : **discuter et faire valider
@@ -35,6 +35,16 @@ Les textes affichés aux patients sont validés **mot à mot** par le Dr Jameson
   refresh token via oauthplayground AVEC ses propres identifiants (roue ⚙️).
 - Domaine urgence-rachis.fr : PAS acheté. `STATS_KEY` : pas posé. Web Analytics : non.
 
+## ⚠️ PIÈGE DE PUSH — RÉSOLU DÉFINITIVEMENT (26/07)
+Les pushes MCP transformaient parfois les échappements de saut de ligne des chaînes
+JS inline en retours réels → SyntaxError en prod (arrivé 3 fois). **Solution en
+place** : le script de public/index.html n'utilise PLUS AUCUN échappement fragile —
+constante `const NL = String.fromCharCode(10);` en tête de CONFIGURATION, utilisée
+partout (labels.join(NL), NL+"<sortie>", escapeHtml via split(NL).join,
+join(NL) PDF), validation email par indexOf, extension fichier par lastIndexOf.
+**Workflow obligatoire après CHAQUE push front** : attendre ~30-60 s, curl avec
+cache-buster, extraire le dernier script (python re.findall), `node --check`.
+
 ## PASSE 1 — ✅ EN LIGNE ET TESTÉE (25/07 soir)
 Refonte complète charte **« Blanc clinique »** (maquette A validée) :
 - Héros blanc, colonne vertébrale annotée façon imagerie (halos pulsants, C1-C7/L1-L5,
@@ -49,8 +59,30 @@ Refonte complète charte **« Blanc clinique »** (maquette A validée) :
   fracture-tassement-vertebre, myelopathie-cervicale-definition).
 - Région reformulée : « Rachis thoracique ou lombaire — le milieu ou le bas du dos ».
 - PDF rapport recoloré marine/turquoise.
-- ⚠️ Piège de push résolu : les `\n` dans les chaînes JS du HTML doivent être
-  doublés (`\\n`) dans le JSON des outils GitHub, sinon SyntaxError en prod.
+
+## PASSE 2 — ✅ EN LIGNE ET TESTÉE (26/07)
+- **Worker /api/send** : validation nom/prénom/ddn/tel/email/consent obligatoires,
+  plafond 22 Mo b64, rapport PDF + PJ ≤10, corps structuré
+  (patient/orientation/synthèse/message), sujet « Demande de consultation — NOM
+  Prénom — orientation », From alias urgences@rachis.paris, To dr.jameson@rachis.paris,
+  Reply-To patient, AUCUN stockage, événement stats « envoi_site ».
+- **Front, cartes 24h et 72h — « Deux options pour transmettre votre demande : »** :
+  1. bouton turquoise « 📤 Envoyer ma demande via ce site (recommandé) » → formulaire
+     intégré au chat : Nom*/Prénom*/Date de naissance*/Téléphone*/Email*/Message
+     facultatif/PJ facultatives (compression photos canvas max 2000px JPEG 0.8 si
+     >400 Ko, plafond 15 Mo) ; rapport PDF joint automatiquement ; case consentement.
+  2. « Ou par vous-même : » bouton 📄 Télécharger le PDF + « puis envoyez-le par
+     email à urgences@rachis.paris » (mailto avec sujet pré-rempli — un mailto simple
+     pré-remplit bien le destinataire, contrairement au partage de FICHIER iOS qui
+     l'interdit : raison de l'abandon de l'ancien sharePDF).
+- **Mention de consentement FINALE validée (mention 1)** : « J'accepte que ces
+  informations et les pièces jointes soient transmises de façon sécurisée (connexion
+  chiffrée) au secrétariat de l'Espace Francilien du Rachis afin d'être
+  recontacté(e) pour une consultation. » (l'ancienne formule « email standard, non
+  chiffré de bout en bout » jugée anxiogène a été RETIRÉE — le circuit est chiffré
+  en transit et au repos, seul le E2E type S/MIME manque et n'est pas mentionné).
+- Tests prod : /api/send réel → {"ok":true}, email reçu avec PJ + Reply-To ✅ ;
+  sans consentement → 400 ✅ ; syntaxe JS prod node --check ✅.
 
 ## RÈGLES MÉDICALES VERROUILLÉES (worker, prompt système)
 1-6, 8-12 : inchangées (sphincter→15 ; fièvre→urgences ; paralysie selon jour/heure
@@ -59,7 +91,7 @@ cancer<5ans→72h ; hyperalgique→72h ; >6sem→72h ; aiguë simple→mt ; anci
 **7 (étendue)** : trauma faible énergie OU terrain ostéoporotique (ostéoporose,
 traitement anti-ostéoporotique, corticothérapie au long cours) + douleur axiale aiguë
 thoracique/lombaire → 72h tassement MÊME SANS TRAUMATISME.
-**13 (nouvelle)** : ≥60 ans + douleur axiale thoracique/lombaire AIGUË ET BRUTALE,
+**13** : ≥60 ans + douleur axiale thoracique/lombaire AIGUË ET BRUTALE,
 sans irradiation ni autre cause, même sans ostéoporose connue → 72h tassement
 (l'IA vérifie le caractère brutal avant de conclure).
 **Région** : thoracique assimilé au lombaire partout.
@@ -73,9 +105,11 @@ déterministe carte72h('tassement') (placé APRÈS trauma ; trauma_ancien+osteo 
 - lumbago banal→mt ✅ · myélopathie→24h ✅ · détournement→recadrage ✅ ·
   hyperalgique→72h ✅ · **règle 13 : femme 68 ans, axiale brutale, pas d'ostéo →
   IA pose LES bonnes questions puis 72h tassement + mention fiche niveau 1 ✅**
-- Email test réel reçu ✅ · syntaxe JS prod vérifiée (node --check) ✅
+- /api/send réel ✅ (email + PJ + Reply-To) · refus sans consentement (400) ✅
+- Syntaxe JS prod vérifiée (node --check) après le dernier push ✅
 - Micro-défaut connu : question+signal de sortie parfois dans le même message (front gère).
-- ⚠️ Test mobile complet par Raphael : TOUJOURS PENDING.
+- ⚠️ Test mobile complet par Raphael : TOUJOURS PENDING (parcours + formulaire +
+  envoi réel avec photo).
 
 ## TRACES (option A) — CODÉE MAIS DÉSACTIVÉE
 - Worker : POST /api/trace opérationnel (champs filtrés/tronqués, AUCUN texte libre
@@ -91,26 +125,20 @@ déterministe carte72h('tassement') (placé APRÈS trauma ; trauma_ancien+osteo 
 ## DÉCISIONS PRODUIT ENTÉRINÉES
 - Canal = message au chirurgien avec rapport ; Doctolib générique seulement carte mt.
 - Cartes de sortie à textes fixes ; synthèse IA uniquement dans le PDF.
-- Formulaire d'envoi intégré (PASSE 2, PAS CODÉ) : nom, prénom, date de naissance,
-  téléphone ET email obligatoires + message libre + PJ (compression photos, ~17 Mo)
-  + case consentement ; PDF joint AUTOMATIQUEMENT ; Reply-To patient ; Worker ne
-  stocke rien ; sécurité « email standard » assumée. Textes formulaire + consentement
-  + transparence à soumettre MOT À MOT avant codage.
 - IA : Opus 4.8 → Sonnet 4.6 au-delà de 50 €/mois. Gemini : payant OK, gratuit NON —
   rien d'implémenté, architecture ENGINE prévue, décision en attente.
 
 ## PENDING — Raphael
-1. **Phrase de transparence option A** (ci-dessus) → active les traces.
-2. **Test mobile complet** (parcours + PDF + affichage charte).
+1. **Test mobile complet passe 2** (parcours + formulaire + envoi réel avec photo).
+2. **Phrase de transparence option A** (ci-dessus) → active les traces.
 3. Achat urgence-rachis.fr (~11 €/an, Cloudflare Registrar).
 4. Renouvellement ANTHROPIC_API_KEY avant le 24/08/2026.
 5. STATS_KEY / Web Analytics (optionnels).
 
 ## PENDING — Claude
-1. **PASSE 2 : formulaire d'envoi** (soumettre textes mot à mot AVANT codage).
-2. Mettre à jour le **PDF des arbres décisionnels** (règles tassement/thoracique)
+1. Mettre à jour le **PDF des arbres décisionnels** (règles tassement/thoracique)
    — sources /home/claude/urgence/arbres.py + build_pdf.py (conteneur, régénérables).
-3. Ajustement prompt (question+sortie simultanées) — mineur.
-4. Passe 2 des critères niveau 3 (jamais tranchée : seuil 4/6 sem, « traitement bien
+2. Ajustement prompt (question+sortie simultanées) — mineur.
+3. Passe 2 des critères niveau 3 (jamais tranchée : seuil 4/6 sem, « traitement bien
    conduit », EVA, IRM faite).
-5. Lancement : retirer noindex+badge, mentions légales/RGPD, SEO, maillage.
+4. Lancement : retirer noindex+badge, mentions légales/RGPD, SEO, maillage.
