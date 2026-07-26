@@ -88,7 +88,7 @@ async function hashIp(ip) {
 
 const STAT_EVENTS = new Set(["start","region_cervical","region_lombaire","ia_start",
   "sortie_15","sortie_urgences","sortie_24h","sortie_72h","sortie_mt","sortie_suivi",
-  "pdf","envoi"]);
+  "pdf","envoi","envoi_site"]);
 
 async function rateLimit(env, ip) {
   const h = await hashIp(ip);
@@ -240,6 +240,73 @@ export default {
         await env.URGENCE_KV.put(key, JSON.stringify(trace), { expirationTtl: 31536000 });
       } catch (e) {}
       return new Response(null, { status: 204 });
+    }
+
+    // PASSE 2 — envoi de la demande de consultation par email (chaîne Gmail interne).
+    // Reply-To = email du patient. Le Worker ne stocke rien : transmission directe.
+    if (url.pathname === "/api/send" && request.method === "POST") {
+      const ip = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+      if (!(await rateLimit(env, ip))) {
+        return Response.json({ error: "limite" }, { status: 429 });
+      }
+      let b;
+      try { b = await request.json(); } catch { return Response.json({ error: "corps invalide" }, { status: 400 }); }
+      const s = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+      const nom = s(b.nom, 80), prenom = s(b.prenom, 80), ddn = s(b.ddn, 20);
+      const tel = s(b.tel, 30), email = s(b.email, 120), msg = s(b.message, 3000);
+      const orient = s(b.orientation, 140), synth = s(b.synthese, 700);
+      if (!nom || !prenom || !ddn || !tel || !email || b.consent !== true) {
+        return Response.json({ error: "champs" }, { status: 400 });
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        return Response.json({ error: "email" }, { status: 400 });
+      }
+      const clean64 = t => t.replace(/[^A-Za-z0-9+/=]/g, "");
+      const atts = [];
+      let total = 0;
+      if (typeof b.rapportB64 === "string" && b.rapportB64.length < 8 * 1024 * 1024) {
+        const d = clean64(b.rapportB64);
+        total += d.length;
+        atts.push({ filename: "urgence-rachis-rapport.pdf", mimeType: "application/pdf", dataB64: d });
+      }
+      if (Array.isArray(b.attachments)) {
+        for (const a of b.attachments.slice(0, 10)) {
+          if (!a || typeof a.dataB64 !== "string") continue;
+          const d = clean64(a.dataB64);
+          total += d.length;
+          if (total > 22 * 1024 * 1024) return Response.json({ error: "taille" }, { status: 413 });
+          atts.push({
+            filename: s(a.filename, 120) || "document",
+            mimeType: s(a.mimeType, 60) || "application/octet-stream",
+            dataB64: d,
+          });
+        }
+      }
+      const text =
+        "Nouvelle demande de consultation reçue via Urgence'Rachis.\n\n" +
+        "PATIENT\n" +
+        "Nom : " + nom.toUpperCase() + "\n" +
+        "Prénom : " + prenom + "\n" +
+        "Date de naissance : " + ddn + "\n" +
+        "Téléphone : " + tel + "\n" +
+        "Email : " + email + "\n\n" +
+        "ORIENTATION PROPOSÉE\n" + (orient || "—") + "\n" +
+        (synth ? "\nSynthèse de l'assistant : " + synth + "\n" : "") +
+        "\nMESSAGE DU PATIENT\n" + (msg || "(aucun)") + "\n\n—\n" +
+        "Rapport PDF et éventuelles pièces jointes du patient ci-joints.\n" +
+        "Répondre à cet email écrit directement au patient (Reply-To).";
+      try {
+        await gmailSend(env, {
+          subject: "Demande de consultation — " + nom.toUpperCase() + " " + prenom + (orient ? " — " + orient : ""),
+          text,
+          replyTo: email,
+          attachments: atts,
+        });
+      } catch (e) {
+        console.log("send error", String(e).slice(0, 300));
+        return Response.json({ error: "envoi" }, { status: 502 });
+      }
+      return Response.json({ ok: true });
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
