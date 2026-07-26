@@ -261,7 +261,7 @@ footer a{color:var(--turquoise)}
       <svg width="330" height="470" viewBox="0 0 330 470" xmlns="http://www.w3.org/2000/svg">
         <!-- halos des zones -->
         <ellipse class="pulse" cx="150" cy="97" rx="52" ry="44" fill="#1abc9c" opacity="0.35" style="filter:blur(1px)" fill-opacity="0.16"/>
-        <ellipse class="pulse" cx="150" cy="330" rx="60" ry="52" fill="#f59e0b" opacity="0.35" style="animation-delay:1.3s;filter:blur(1px)" fill-opacity="0.14"/>
+        <ellipse class="pulse" cx="150" cy="252" rx="62" ry="118" fill="#f59e0b" opacity="0.35" style="animation-delay:1.3s;filter:blur(1px)" fill-opacity="0.14"/>
         <!-- crâne stylisé -->
         <circle cx="150" cy="30" r="21" fill="none" stroke="#003366" stroke-width="2.5"/>
         <!-- rachis cervical C1–C7 -->
@@ -272,8 +272,8 @@ footer a{color:var(--turquoise)}
           <rect x="130" y="103" width="40" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
           <rect x="129" y="118" width="42" height="11" rx="5.5" fill="#1abc9c" fill-opacity=".9"/>
         </g>
-        <!-- rachis thoracique (neutre) -->
-        <g fill="#fff" stroke="#8aa8c4" stroke-width="1.4">
+        <!-- rachis thoracique (même zone que le lombaire dans le parcours patient) -->
+        <g stroke="#003366" stroke-width="1.4" fill="#f59e0b" fill-opacity=".85">
           <rect x="128" y="134" width="44" height="11" rx="5.5"/>
           <rect x="127" y="149" width="46" height="11" rx="5.5"/>
           <rect x="127" y="164" width="46" height="11" rx="5.5"/>
@@ -305,11 +305,12 @@ footer a{color:var(--turquoise)}
           <line x1="207" y1="129" x2="217" y2="129" stroke="#1abc9c" stroke-width="1.2"/>
           <text x="224" y="90" fill="#149a80">C1–C7</text>
           <text x="224" y="104" font-size="9.5" fill="#6b7280">rachis cervical</text>
-          <line x1="212" y1="285" x2="212" y2="366" stroke="#f59e0b" stroke-width="1.2"/>
-          <line x1="207" y1="285" x2="217" y2="285" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="212" y1="134" x2="212" y2="366" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="207" y1="134" x2="217" y2="134" stroke="#f59e0b" stroke-width="1.2"/>
           <line x1="207" y1="366" x2="217" y2="366" stroke="#f59e0b" stroke-width="1.2"/>
-          <text x="224" y="320" fill="#b47408">L1–L5</text>
-          <text x="224" y="334" font-size="9.5" fill="#6b7280">rachis lombaire</text>
+          <text x="224" y="244" fill="#b47408">T1–L5</text>
+          <text x="224" y="258" font-size="9.5" fill="#6b7280">rachis thoracique</text>
+          <text x="224" y="269" font-size="9.5" fill="#6b7280">ou lombaire</text>
           <text x="228" y="376" font-size="9.5" fill="#e5484d">hernie</text>
           <text x="228" y="388" font-size="9.5" fill="#e5484d">discale</text>
           <line x1="222" y1="372" x2="197" y2="335" stroke="#e5484d" stroke-width="1" stroke-dasharray="3 3"/>
