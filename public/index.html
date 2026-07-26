@@ -200,6 +200,29 @@ h2{font-size:1.5rem;font-weight:700;margin-bottom:12px;letter-spacing:-.2px}
 .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
 
+/* ---- passe 2 : double option d'envoi + formulaire intégré ---- */
+.deux-options{margin-top:12px;font-size:.94rem}
+.alt-envoi{margin-top:10px;font-size:.88rem;color:var(--gris)}
+.alt-envoi .cta{margin:6px 8px 0 0}
+.alt-envoi a{color:var(--turquoise-dark);font-weight:600}
+.form-envoi{align-self:stretch;background:#fff;border:1.5px solid var(--turquoise);border-radius:var(--r-md);padding:16px 18px;box-shadow:0 6px 18px rgba(0,51,102,.08)}
+.form-envoi h3{font-family:var(--font-titre);color:var(--marine);font-size:1.02rem;margin-bottom:6px}
+.fe-intro{font-size:.88rem;color:var(--gris);margin-bottom:12px}
+.fe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.fe-grid{grid-template-columns:1fr}}
+.fe-grid label{display:flex;flex-direction:column;font-size:.8rem;font-weight:600;color:var(--marine);gap:4px}
+.fe-grid input,.fe-grid textarea{font-family:inherit;font-size:.95rem;font-weight:400;color:var(--encre);padding:9px 12px;border:1.5px solid var(--ligne);border-radius:var(--r-md);background:#fff}
+.fe-grid input:focus,.fe-grid textarea:focus{outline:none;border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(26,188,156,.18)}
+.fe-grid textarea{min-height:70px;resize:vertical}
+.fe-full{grid-column:1/-1}
+.fe-note{font-size:.75rem;color:var(--gris);font-weight:400}
+.fe-consent{grid-column:1/-1;flex-direction:row!important;align-items:flex-start;gap:10px!important;font-weight:400!important;font-size:.82rem!important;color:var(--encre)!important;background:var(--fond-doux);border:1px solid var(--ligne);border-radius:var(--r-md);padding:10px 12px;cursor:pointer}
+.fe-consent input{margin-top:3px;accent-color:var(--turquoise)}
+.fe-err{color:var(--rose);font-size:.85rem;min-height:1.1em;margin:8px 0 2px}
+.fe-send{display:inline-block;margin-top:4px;padding:12px 24px;border-radius:var(--r-full);border:none;background:var(--turquoise);color:#fff;font-family:var(--font-titre);font-weight:600;font-size:.92rem;cursor:pointer}
+.fe-send:hover{background:var(--turquoise-dark)}
+.fe-send:disabled{opacity:.6;cursor:default}
+
 /* ---- pied de page marine ---- */
 footer{margin-top:60px;background:var(--marine);color:#cfe0ee;padding:30px 0 38px;font-size:.82rem}
 footer .wrap{display:flex;flex-direction:column;gap:10px}
@@ -412,7 +435,7 @@ footer a{color:var(--turquoise)}
 
 <script>
 /* ============ CONFIGURATION ============ */
-const CONTACT_EMAIL = "dr.jameson@rachis.paris";
+const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
 const NOTE = "⚠️ Cette évaluation est <strong>non médicale</strong> et fournie à titre indicatif. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de doute&nbsp;: appelez le 15 ou rendez-vous aux urgences.";
 const LOCK = "Si apparaissent d'ici là une fièvre, une perte de force, des troubles urinaires ou une paralysie&nbsp;: appelez le 15 sans attendre.";
@@ -469,12 +492,25 @@ function inputField(placeholder,onSubmit,opts={}){
 function exitCard(cls,title,body,ctas){
   const d=document.createElement("div");d.className="exit "+cls;
   d.innerHTML=`<h3>${title}</h3>${body}<p class="note">${NOTE}</p>`;
+  if((ctas||[]).some(c=>c.form)){
+    const t=document.createElement("p");t.className="deux-options";
+    t.innerHTML="<strong>Deux options pour transmettre votre demande&nbsp;:</strong>";
+    d.appendChild(t);
+  }
   (ctas||[]).forEach(c=>{
     let el;
-    if(c.pdf){el=document.createElement("button");el.className="cta pdf";el.onclick=makePDF;}
-    else if(c.share){el=document.createElement("button");el.className="cta";el.onclick=sharePDF;}
-    else{el=document.createElement("a");el.className="cta";el.href=c.href;el.rel="noopener";}
-    el.textContent=c.label;d.appendChild(el);
+    if(c.pdf){el=document.createElement("button");el.className="cta pdf";el.onclick=makePDF;el.textContent=c.label;}
+    else if(c.form){el=document.createElement("button");el.className="cta";el.onclick=openSendForm;el.textContent=c.label;}
+    else if(c.altpdf){
+      el=document.createElement("div");el.className="alt-envoi";
+      const lead=document.createElement("span");lead.innerHTML="<strong>Ou par vous-même&nbsp;:</strong> ";
+      const b=document.createElement("button");b.className="cta pdf";b.textContent="📄 Télécharger le PDF";b.onclick=makePDF;
+      const s=document.createElement("span");
+      s.innerHTML=" puis envoyez-le par email à <a href=\"mailto:"+CONTACT_EMAIL+"?subject="+encodeURIComponent("Demande de consultation — rapport Urgence'Rachis")+"\">"+CONTACT_EMAIL+"</a>.";
+      el.appendChild(lead);el.appendChild(b);el.appendChild(s);
+    }
+    else{el=document.createElement("a");el.className="cta";el.href=c.href;el.rel="noopener";el.textContent=c.label;}
+    d.appendChild(el);
   });
   chat.appendChild(d);
   const r=document.createElement("button");r.className="restart";r.textContent="↻ Recommencer l'évaluation";
@@ -511,7 +547,7 @@ function carte24h(motif){
   `<p>${motifs[motif]||motifs.force}</p>
    <p>Nous vous proposons d'envoyer dès maintenant un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être pris en charge rapidement <strong>en consultation par l'un des chirurgiens de l'équipe</strong>, en vue d'une éventuelle prise en charge chirurgicale.</p>
    ${souhaitLigne()}${garde}<p class="note">${LOCK}</p>`,
-  [{share:true,label:"📤 Envoyer mon message au chirurgien"},{pdf:true,label:"📄 Télécharger le PDF"}]);
+  [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
 }
 function carte72h(motif){
   const extras={cancer:"<p>Vous pouvez aussi contacter votre <strong>oncologue</strong> s'il peut vous recevoir plus tôt.</p>",
@@ -523,7 +559,7 @@ function carte72h(motif){
    ${extras[motif]||""}
    <p>Nous vous proposons d'envoyer un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être recontacté(e) et pris(e) en charge <strong>en consultation par l'un des chirurgiens de l'équipe</strong>.</p>
    ${souhaitLigne()}<p class="note">${LOCK}</p>`,
-  [{share:true,label:"📤 Envoyer mon message au chirurgien"},{pdf:true,label:"📄 Télécharger le PDF"}]);
+  [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
 }
 function carteMT(){
   S.orientation="Orientation vers le médecin traitant — un avis chirurgical n'est probablement pas nécessaire";stat("sortie_mt");
@@ -777,6 +813,78 @@ function startIA(){
   callIA();
 }
 
+
+/* ============ PASSE 2 — FORMULAIRE D'ENVOI INTÉGRÉ (chaîne Gmail interne) ============ */
+function openSendForm(){
+  if(document.getElementById("formEnvoi")){document.getElementById("formEnvoi").scrollIntoView({behavior:"smooth"});return;}
+  const f=document.createElement("div");f.className="form-envoi";f.id="formEnvoi";
+  f.innerHTML=`<h3>Demande de consultation</h3>
+  <p class="fe-intro">Vos coordonnées permettront au secrétariat de vous recontacter pour fixer la consultation. Votre rapport d'évaluation sera joint automatiquement à votre message.</p>
+  <div class="fe-grid">
+    <label>Nom *<input id="feNom" autocomplete="family-name"></label>
+    <label>Prénom *<input id="fePrenom" autocomplete="given-name"></label>
+    <label>Date de naissance *<input id="feDdn" type="date"></label>
+    <label>Téléphone *<input id="feTel" type="tel" autocomplete="tel" inputmode="tel"></label>
+    <label class="fe-full">Adresse email *<input id="feEmail" type="email" autocomplete="email" inputmode="email"></label>
+    <label class="fe-full">Message (facultatif)<textarea id="feMsg" placeholder="Précisions utiles : vos disponibilités, votre contexte…"></textarea></label>
+    <label class="fe-full">Pièces jointes (facultatif)<input id="feFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx"><span class="fe-note">Imagerie, comptes rendus, courriers (jusqu'à 15 Mo au total). Les photos sont compressées automatiquement.</span></label>
+    <label class="fe-consent"><input id="feConsent" type="checkbox"> <span>J'accepte que ces informations et les pièces jointes soient transmises par email au secrétariat de l'Espace Francilien du Rachis afin d'être recontacté(e) pour une consultation. Cet envoi utilise l'email standard, non chiffré de bout en bout.</span></label>
+  </div>
+  <div class="fe-err" id="feErr" aria-live="polite"></div>
+  <button class="fe-send" id="feSend">Envoyer ma demande de consultation</button>
+  <button class="restart" id="feCancel">Annuler</button>`;
+  chat.appendChild(f);scrollChat();
+  document.getElementById("feCancel").onclick=()=>f.remove();
+  document.getElementById("feSend").onclick=submitForm;
+}
+function fileToB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=()=>rej(new Error("lecture"));r.readAsDataURL(file);});}
+async function compressImage(file){
+  if(!file.type.startsWith("image/")||file.size<400000) return null;
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("img"));i.src=url;});
+    const max=2000,k=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return c.toDataURL("image/jpeg",0.8).split(",")[1];
+  }catch(e){return null;}
+  finally{URL.revokeObjectURL(url);}
+}
+async function submitForm(){
+  const g=id=>document.getElementById(id);
+  const err=t=>{g("feErr").textContent=t;};
+  const nom=g("feNom").value.trim(),prenom=g("fePrenom").value.trim(),ddn=g("feDdn").value,tel=g("feTel").value.trim(),email=g("feEmail").value.trim();
+  if(!nom||!prenom||!ddn||!tel||!email) return err("Merci de remplir tous les champs obligatoires (*).");
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err("L'adresse email semble invalide.");
+  if(!g("feConsent").checked) return err("Merci de cocher la case de consentement pour permettre l'envoi.");
+  err("");
+  const btn=g("feSend");btn.disabled=true;btn.textContent="Envoi en cours…";
+  try{
+    const atts=[];let total=0;
+    for(const file of g("feFiles").files){
+      let dataB64,mimeType=file.type||"application/octet-stream",filename=file.name||"document";
+      const comp=await compressImage(file);
+      if(comp){dataB64=comp;mimeType="image/jpeg";filename=filename.replace(/\.[^.]+$/,"")+".jpg";}
+      else dataB64=await fileToB64(file);
+      total+=dataB64.length*0.75;
+      if(total>15*1024*1024) throw {taille:true};
+      atts.push({filename,mimeType,dataB64});
+    }
+    const rapportB64=buildPDF().output("datauristring").split(",")[1];
+    const r=await fetch("/api/send",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({nom,prenom,ddn,tel,email,message:g("feMsg").value.trim(),consent:true,
+        orientation:S.orientation||"",synthese:S.synthese||"",attachments:atts,rapportB64})});
+    if(!r.ok){const d=await r.json().catch(()=>({}));throw (d&&d.error==="taille")?{taille:true}:new Error("api");}
+    stat("envoi_site");
+    g("formEnvoi").remove();
+    bot(`✅ Votre demande a bien été envoyée au secrétariat. Vous serez recontacté(e) par téléphone ou par email pour fixer la consultation. Si votre état s'aggrave d'ici là — fièvre, perte de force, troubles urinaires, paralysie — appelez le 15 sans attendre.`);
+  }catch(e){
+    btn.disabled=false;btn.textContent="Envoyer ma demande de consultation";
+    if(e&&e.taille) err("Les pièces jointes dépassent 15 Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
+    else err("L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez. Vous pouvez aussi télécharger votre PDF et l'envoyer vous-même à "+CONTACT_EMAIL+".");
+  }
+}
+
 /* ============ RAPPORT PDF (généré localement) ============ */
 function buildPDF(){
   const { jsPDF } = window.jspdf;
@@ -817,23 +925,6 @@ function buildPDF(){
   return doc;
 }
 function makePDF(){stat("pdf");buildPDF().save("urgence-rachis-rapport.pdf");}
-async function sharePDF(){
-  stat("envoi");
-  const doc=buildPDF();
-  const blob=doc.output("blob");
-  const file=new File([blob],"urgence-rachis-rapport.pdf",{type:"application/pdf"});
-  const shareData={files:[file],title:"Rapport Urgence'Rachis",
-    text:"Bonjour, je vous adresse mon rapport d'orientation Urgence'Rachis en pièce jointe, en vue d'une consultation d'avis chirurgical. Merci de me recontacter pour fixer le rendez-vous."};
-  if(navigator.canShare&&navigator.canShare({files:[file]})){
-    try{await navigator.share(shareData);return;}catch(e){if(e.name==="AbortError")return;}
-  }
-  doc.save("urgence-rachis-rapport.pdf");
-  bot(`Le fichier <strong>urgence-rachis-rapport.pdf</strong> vient d'être téléchargé. Votre messagerie va s'ouvrir avec un message pré-rempli&nbsp;: <strong>joignez-y le fichier téléchargé</strong> (trombone / « Joindre un fichier »), puis envoyez. Le secrétariat vous recontactera pour fixer la consultation.`);
-  const subject=encodeURIComponent("Demande de consultation d'avis chirurgical — rapport Urgence'Rachis");
-  const body=encodeURIComponent("Bonjour,\n\nJe vous adresse en pièce jointe mon rapport d'orientation Urgence'Rachis (fichier : urgence-rachis-rapport.pdf, téléchargé sur mon appareil), en vue d'une consultation d'avis chirurgical avec l'un des chirurgiens de l'équipe. Merci de me recontacter pour fixer le rendez-vous.\n\nOrientation proposée : "+(S.orientation||"—")+"\n\nCordialement");
-  setTimeout(()=>{window.location.href=`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;},900);
-}
-
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vu");io.unobserve(e.target);}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
 start();
