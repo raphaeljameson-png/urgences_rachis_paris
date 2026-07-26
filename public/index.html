@@ -470,7 +470,28 @@ function row(role,el){
   chat.appendChild(r);scrollChat();
 }
 function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;row("bot",d);}
-function userMsg(t){suiviActif=true;const d=document.createElement("div");d.className="msg user";d.textContent=t;row("user",d);}
+function userMsg(t){suiviActif=true;const br=document.getElementById("btnRetour");if(br)br.remove();const d=document.createElement("div");d.className="msg user";d.textContent=t;row("user",d);}
+/* ---- Retour en arrière (parcours à questions fermées) ----
+   À chaque question, on mémorise la fonction, l'état du dossier et la position
+   dans le fil. « Corriger ma réponse précédente » efface la dernière paire
+   question/réponse et repose la question précédente, vierge. */
+let histo=[];
+function marque(fn){histo.push({fn:fn,etat:JSON.stringify(S),pos:chat.children.length});}
+function ajouterRetour(){
+  if(histo.length<2) return;
+  const b=document.createElement("button");b.className="restart";b.id="btnRetour";
+  b.textContent="\u21a9 Corriger ma r\u00e9ponse pr\u00e9c\u00e9dente";
+  b.onclick=retour;
+  chat.appendChild(b);
+}
+function retour(){
+  if(histo.length<2) return;
+  histo.pop();
+  const p=histo.pop();
+  S=JSON.parse(p.etat);
+  while(chat.children.length>p.pos) chat.lastChild.remove();
+  p.fn();
+}
 /* Le recentrage ne s'active qu'à la première réponse du patient : au chargement,
    la page reste en haut et le visiteur découvre le site normalement. */
 let suiviActif=false;
@@ -503,7 +524,7 @@ function ask(text,options){
     b.onclick=()=>{w.remove();userMsg(label);setTimeout(fn,300);};
     w.appendChild(b);
   });
-  chat.appendChild(w);scrollChat();
+  chat.appendChild(w);ajouterRetour();scrollChat();
 }
 function inputField(placeholder,onSubmit,opts={}){
   const w=document.createElement("div");w.className="field"+(opts.wide?" wide":"");
@@ -515,7 +536,7 @@ function inputField(placeholder,onSubmit,opts={}){
     w.remove();userMsg(v);setTimeout(()=>onSubmit(v),300);};
   go.onclick=submit;
   if(!opts.textarea) el.addEventListener("keydown",e=>{if(e.key==="Enter")submit();});
-  w.appendChild(el);w.appendChild(go);chat.appendChild(w);el.focus();scrollChat();
+  w.appendChild(el);w.appendChild(go);chat.appendChild(w);ajouterRetour();el.focus();scrollChat();
 }
 
 /* ============ CARTES DE SORTIE (textes fixes validés) ============ */
@@ -634,11 +655,12 @@ function carteParNiveau(sortie){
 
 /* ============ PHASE 1 — RECUEIL STRUCTURÉ PAR RÉGION ============ */
 function start(){
-  resetState();stat("start");
+  resetState();histo=[];stat("start");
   bot(`Bonjour, je suis l'assistant d'orientation de l'<strong>Espace Francilien du Rachis</strong>. Quelques questions rapides, puis vous décrirez librement vos symptômes&nbsp;: j'évaluerai le degré d'urgence et vous proposerai le bon circuit. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de détresse immédiate, appelez le&nbsp;15.`);
   setTimeout(qRegion,420);
 }
 function qRegion(){
+  marque(qRegion);
   bot(`Votre problème concerne-t-il le <strong>rachis cervical</strong>, c'est-à-dire le cou, ou le <strong>rachis thoracique ou lombaire</strong>, c'est-à-dire le milieu ou le bas du dos&nbsp;?`);
   const w=document.createElement("div");w.className="region-cards";
   const mk=(svg,titre,sous,val,label)=>{
@@ -654,20 +676,24 @@ function qRegion(){
   chat.appendChild(w);scrollChat();
 }
 function qSexe(){
+  marque(qSexe);
   ask(`Quel est votre sexe&nbsp;?`,
   [["Femme",()=>{S.sexe="Femme";qAge();}],["Homme",()=>{S.sexe="Homme";qAge();}],
    ["Ne pas préciser",()=>{S.sexe="Non précisé";qAge();}]]);
 }
 function qAge(){
+  marque(qAge);
   bot(`Quel est votre <strong>âge</strong>&nbsp;?`);
   inputField("Votre âge en années",v=>{S.age=v;S.region==="cervical"?qLateralite():qIrradiation();},{type:"number"});
 }
 function qLateralite(){
+  marque(qLateralite);
   ask(`Êtes-vous <strong>droitier ou gaucher</strong>&nbsp;?`,
   [["Droitier",()=>{S.lateralite="Droitier";qIrradiation();}],
    ["Gaucher",()=>{S.lateralite="Gaucher";qIrradiation();}]]);
 }
 function qIrradiation(){
+  marque(qIrradiation);
   const c=S.region==="cervical";
   ask(c?`La douleur descend-elle dans le <strong>bras</strong>&nbsp;?`:`La douleur descend-elle dans la <strong>jambe</strong>&nbsp;?`,
   c?[["Bras droit",()=>{S.irradiation="Bras droit";qAnciennete();}],
@@ -680,6 +706,7 @@ function qIrradiation(){
      ["Non",()=>{S.irradiation="Non";qAnciennete();}]]);
 }
 function qAnciennete(){
+  marque(qAnciennete);
   ask(`Depuis combien de temps ces symptômes évoluent-ils&nbsp;?`,
   [["Moins de 48 h",()=>{S.anciennete="Moins de 48 heures";qEvolution();}],
    ["Moins d'une semaine",()=>{S.anciennete="Moins d'une semaine";qEvolution();}],
@@ -687,12 +714,14 @@ function qAnciennete(){
    ["Plus de 6 semaines",()=>{S.anciennete="Plus de 6 semaines";qEvolution();}]]);
 }
 function qEvolution(){
+  marque(qEvolution);
   ask(`Comment évoluent-ils&nbsp;?`,
   [["Ils s'aggravent",()=>{S.evolution="Aggravation";qImagerie();}],
    ["Ils sont stables",()=>{S.evolution="Stable";qImagerie();}],
    ["Ils s'améliorent",()=>{S.evolution="Amélioration";qImagerie();}]]);
 }
 function qImagerie(){
+  marque(qImagerie);
   ask(`Avez-vous déjà passé une <strong>imagerie</strong> pour ce problème&nbsp;?`,
   [["Aucune",()=>{S.imagerie="Aucune";qSouhait();}],
    ["Radiographies",()=>{S.imagerie="Radiographies";qImagerieDate();}],
@@ -700,11 +729,13 @@ function qImagerie(){
    ["IRM",()=>{S.imagerie="IRM";qImagerieDate();}]]);
 }
 function qImagerieDate(){
+  marque(qImagerieDate);
   ask(`Cette imagerie date-t-elle de <strong>moins de 3 mois</strong>&nbsp;?`,
   [["Oui",()=>{S.imagerieRecente="Oui";qSouhait();}],
    ["Non",()=>{S.imagerieRecente="Non";qSouhait();}]]);
 }
 function qSouhait(){
+  marque(qSouhait);
   /* Scanner ou IRM de moins de 3 mois : imagerie suffisante, on ne propose plus
      d'organiser une IRM — seulement l'avis chirurgical. Les radiographies, elles,
      ne dispensent pas d'une IRM. */
@@ -715,6 +746,7 @@ function qSouhait(){
   ask(`Que souhaitez-vous&nbsp;?`,opts);
 }
 function qAlarme(){
+  marque(qAlarme);
   bot(`Étape importante&nbsp;: cochez tout ce qui correspond à votre situation <strong>actuelle</strong>.`);
   const cerv=S.region==="cervical";
   const items=cerv?[
@@ -761,7 +793,7 @@ function qAlarme(){
     userMsg(labels.length?labels.join(NL):"Aucun de ces signes");
     setTimeout(courtCircuits,320);
   };
-  chat.appendChild(w);chat.appendChild(go);scrollChat();
+  chat.appendChild(w);chat.appendChild(go);ajouterRetour();scrollChat();
 }
 
 /* ============ COURT-CIRCUITS DE SÉCURITÉ (déterministes, sans IA) ============ */
@@ -784,11 +816,13 @@ async function courtCircuits(){
   qDescription();
 }
 function qTraumaType(){
+  marque(qTraumaType);
   ask(`Vous mentionnez un traumatisme&nbsp;: de quel type s'agit-il&nbsp;?`,
   [["Accident de la route / chute de hauteur",qTraumaDelai],
    ["Chute de ma hauteur / faux mouvement / port de charge",()=>{S.signes.push("tassement");qDescription();}]]);
 }
 function qTraumaDelai(){
+  marque(qTraumaDelai);
   ask(`Cet accident a-t-il eu lieu il y a <strong>moins de 24 heures</strong>&nbsp;?`,
   [["Oui, moins de 24 h",()=>carteUrgences("trauma_urgences")],
    ["Non, plus de 24 h",()=>{S.signes.push("trauma_ancien");qDescription();}]]);
@@ -796,6 +830,7 @@ function qTraumaDelai(){
 
 /* ============ PHASE 2 — DESCRIPTION LIBRE ============ */
 function qDescription(){
+  marque(qDescription);
   bot(`Décrivez maintenant vos symptômes <strong>avec vos propres mots</strong>&nbsp;: où la douleur se situe, où elle descend, ce qui la déclenche ou la soulage, les traitements essayés… L'assistant vous posera ensuite quelques questions complémentaires si nécessaire.`);
   inputField("Décrivez vos symptômes…",v=>{S.description=v;startIA();},{textarea:true,wide:true});
 }
