@@ -470,8 +470,12 @@ function row(role,el){
   chat.appendChild(r);scrollChat();
 }
 function bot(html){const d=document.createElement("div");d.className="msg bot";d.innerHTML=html;row("bot",d);}
-function userMsg(t){const d=document.createElement("div");d.className="msg user";d.textContent=t;row("user",d);}
+function userMsg(t){suiviActif=true;const d=document.createElement("div");d.className="msg user";d.textContent=t;row("user",d);}
+/* Le recentrage ne s'active qu'à la première réponse du patient : au chargement,
+   la page reste en haut et le visiteur découvre le site normalement. */
+let suiviActif=false;
 function scrollChat(){
+  if(!suiviActif) return;
   const last=chat.lastElementChild;
   if(!last) return;
   requestAnimationFrame(()=>{
@@ -535,7 +539,7 @@ function exitCard(cls,title,body,ctas){
   });
   chat.appendChild(d);
   const r=document.createElement("button");r.className="restart";r.textContent="↻ Recommencer l'évaluation";
-  r.onclick=()=>{chat.innerHTML="";start();};
+  r.onclick=()=>{chat.innerHTML="";suiviActif=false;start();};
   chat.appendChild(r);scrollChat();
 }
 function souhaitLigne(){
