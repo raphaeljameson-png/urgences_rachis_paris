@@ -906,6 +906,31 @@ function openSendForm(){
   document.getElementById("feCancel").onclick=()=>f.remove();
   document.getElementById("feSend").onclick=submitForm;
 }
+function validerEmail(e){
+  if(e.indexOf(" ")>=0) return false;
+  const a=e.indexOf("@");
+  if(a<1||e.indexOf("@",a+1)>=0) return false;
+  const dom=e.slice(a+1);
+  const p=dom.lastIndexOf(".");
+  return p>0&&p<dom.length-1&&dom.length>=3;
+}
+function validerTel(t){
+  const n=t.split(" ").join("").split(".").join("").split("-").join("").split("(").join("").split(")").join("");
+  if(n.slice(0,1)==="+"){const c=n.slice(1);return c.length>=8&&c.length<=14&&/^[0-9]+$/.test(c);}
+  return n.length===10&&n.slice(0,1)==="0"&&/^[0-9]+$/.test(n);
+}
+function validerMajeur(ddn){
+  const d=new Date(ddn+"T00:00:00");
+  if(isNaN(d.getTime())) return "date";
+  const now=new Date();
+  if(d>now) return "date";
+  let age=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
+  if(age>120) return "date";
+  if(age<18) return "mineur";
+  return "ok";
+}
 function fileToB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=()=>rej(new Error("lecture"));r.readAsDataURL(file);});}
 async function compressImage(file){
   if(!file.type.startsWith("image/")||file.size<400000) return null;
@@ -924,7 +949,11 @@ async function submitForm(){
   const err=t=>{g("feErr").textContent=t;};
   const nom=g("feNom").value.trim(),prenom=g("fePrenom").value.trim(),ddn=g("feDdn").value,tel=g("feTel").value.trim(),email=g("feEmail").value.trim();
   if(!nom||!prenom||!ddn||!tel||!email) return err("Merci de remplir tous les champs obligatoires (*).");
-  if(email.indexOf("@")<1||email.indexOf(" ")>=0||email.lastIndexOf(".")<email.indexOf("@")) return err("L'adresse email semble invalide.");
+  if(!validerEmail(email)) return err("L'adresse email semble invalide. V\u00e9rifiez sa saisie.");
+  if(!validerTel(tel)) return err("Le num\u00e9ro de t\u00e9l\u00e9phone semble invalide. Saisissez un num\u00e9ro \u00e0 10 chiffres (ou au format international +33\u2026).");
+  const verifAge=validerMajeur(ddn);
+  if(verifAge==="date") return err("La date de naissance semble invalide. V\u00e9rifiez sa saisie.");
+  if(verifAge==="mineur") return err("Ce formulaire est r\u00e9serv\u00e9 aux personnes majeures. Pour un mineur, la demande de consultation doit \u00eatre faite par un parent ou repr\u00e9sentant l\u00e9gal : t\u00e9l\u00e9chargez le rapport PDF et envoyez-le par email \u00e0 "+CONTACT_EMAIL+" en pr\u00e9cisant votre lien avec le patient.");
   if(!g("feConsent").checked) return err("Merci de cocher la case de consentement pour permettre l'envoi.");
   err("");
   const btn=g("feSend");btn.disabled=true;btn.textContent="Envoi en cours…";
