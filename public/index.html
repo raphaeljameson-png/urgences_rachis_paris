@@ -671,15 +671,19 @@ function qImagerie(){
    ["IRM",()=>{S.imagerie="IRM";qImagerieDate();}]]);
 }
 function qImagerieDate(){
-  ask(`Cette imagerie date-t-elle de <strong>moins de 6 mois</strong>&nbsp;?`,
+  ask(`Cette imagerie date-t-elle de <strong>moins de 3 mois</strong>&nbsp;?`,
   [["Oui",()=>{S.imagerieRecente="Oui";qSouhait();}],
    ["Non",()=>{S.imagerieRecente="Non";qSouhait();}]]);
 }
 function qSouhait(){
-  ask(`Que souhaitez-vous&nbsp;?`,
-  [["Un rendez-vous chirurgical",()=>{S.souhait="rdv";qAlarme();}],
-   ["Un rendez-vous chirurgical + IRM rapide organisée",()=>{S.souhait="irm";qAlarme();}],
-   ["Je ne sais pas encore — un avis d'abord",()=>{S.souhait="avis";qAlarme();}]]);
+  /* Scanner ou IRM de moins de 3 mois : imagerie suffisante, on ne propose plus
+     d'organiser une IRM — seulement l'avis chirurgical. Les radiographies, elles,
+     ne dispensent pas d'une IRM. */
+  const dispenseIRM=(S.imagerie==="Scanner"||S.imagerie==="IRM")&&S.imagerieRecente==="Oui";
+  const opts=[["Un rendez-vous chirurgical",()=>{S.souhait="rdv";qAlarme();}]];
+  if(!dispenseIRM) opts.push(["Un rendez-vous chirurgical + IRM rapide organisée",()=>{S.souhait="irm";qAlarme();}]);
+  opts.push(["Je ne sais pas encore — un avis d'abord",()=>{S.souhait="avis";qAlarme();}]);
+  ask(`Que souhaitez-vous&nbsp;?`,opts);
 }
 function qAlarme(){
   bot(`Étape importante&nbsp;: cochez tout ce qui correspond à votre situation <strong>actuelle</strong>.`);
@@ -771,7 +775,7 @@ function qDescription(){
 function dossier(){
   return {region:S.region,sexe:S.sexe,age:S.age,lateralite:S.lateralite,
     irradiation:S.irradiation,anciennete:S.anciennete,evolution:S.evolution,
-    imagerie:S.imagerie,imagerie_moins_6_mois:S.imagerieRecente,
+    imagerie:S.imagerie,imagerie_moins_3_mois:S.imagerieRecente,
     souhait_patient:S.souhait==="rdv"?"rendez-vous chirurgical":(S.souhait==="irm"?"rendez-vous chirurgical + IRM rapide organisée":"avis d'abord"),
     signes_coches:S.signes,description:S.description};
 }
@@ -914,7 +918,7 @@ function buildPDF(){
   line("Sexe : "+(S.sexe||"—")+"   ·   Âge : "+(S.age||"—")+" ans"+(S.lateralite?("   ·   "+S.lateralite):""));
   line("Irradiation : "+(S.irradiation||"—"));
   line("Ancienneté : "+(S.anciennete||"—")+"   ·   Évolution : "+(S.evolution||"—"));
-  line("Imagerie : "+(S.imagerie||"—")+(S.imagerieRecente?(" (moins de 6 mois : "+S.imagerieRecente+")"):""));
+  line("Imagerie : "+(S.imagerie||"—")+(S.imagerieRecente?(" (moins de 3 mois : "+S.imagerieRecente+")"):""));
   line("Souhait exprimé : "+(S.souhait==="rdv"?"Rendez-vous chirurgical":(S.souhait==="irm"?"Rendez-vous chirurgical + IRM rapide":"Un avis d'abord")),{gap:4});
   line("DESCRIPTION PAR LE PATIENT",{bold:true,size:11,color:[0,51,102]});
   line(S.description||"(non renseignée)",{gap:4});
