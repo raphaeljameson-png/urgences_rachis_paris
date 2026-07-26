@@ -480,9 +480,14 @@ function scrollChat(){
   if(!last) return;
   requestAnimationFrame(()=>{
     const r=last.getBoundingClientRect();
-    const marge=86;
-    const horsEcran=(r.bottom>window.innerHeight-16)||(r.top<marge);
-    if(horsEcran) window.scrollTo({top:Math.max(0,window.scrollY+r.top-marge),behavior:"smooth"});
+    const margeHaut=86, margeBas=18;
+    const horsEcran=(r.bottom>window.innerHeight-margeBas)||(r.top<margeHaut);
+    if(!horsEcran) return;
+    const tropGrand=r.height>window.innerHeight-margeHaut-margeBas;
+    const cible=tropGrand
+      ? window.scrollY+r.top-margeHaut
+      : window.scrollY+r.bottom-window.innerHeight+margeBas;
+    window.scrollTo({top:Math.max(0,cible),behavior:"smooth"});
   });
 }
 function typing(on){
