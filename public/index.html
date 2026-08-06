@@ -183,6 +183,9 @@ h2{font-size:1.5rem;font-weight:700;margin-bottom:12px;letter-spacing:-.2px}
 .exit.n3 h3{color:var(--turquoise-dark)}
 .exit.n4{background:var(--fond-doux);border:1.5px solid var(--ligne)}
 .exit.n4 h3{color:var(--marine)}
+.exit.n5{background:#eef4fa;border:1.5px solid var(--marine-soft)}
+.exit.n5 h3{color:var(--marine)}
+.exit.n5 .cta{background:var(--marine);color:#fff}
 .exit .cta{display:inline-block;margin:10px 8px 0 0;padding:10px 20px;border-radius:var(--r-full);text-decoration:none;font-family:var(--font-titre);font-weight:600;font-size:.9rem;border:none;cursor:pointer}
 .exit .cta:hover{filter:brightness(1.06)}
 .exit.n1 .cta{background:var(--rose);color:#fff}
@@ -451,6 +454,8 @@ const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
 const NOTE = "⚠️ Cette évaluation est <strong>non médicale</strong> et fournie à titre indicatif. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de doute&nbsp;: appelez le 15 ou rendez-vous aux urgences.";
 const LOCK = "Si apparaissent d'ici là une fièvre, une perte de force, des troubles urinaires ou une paralysie&nbsp;: appelez le 15 sans attendre.";
+const IMGNOTE = "<p><strong>Important</strong>&nbsp;: apportez le CD-ROM de vos imageries ou les codes d'acc\u00e8s en ligne \u2014 le compte rendu seul ne permet pas au chirurgien d'analyser vos images, et l'analyse de l'IRM sur un smartphone n'est pas possible non plus.</p>";
+const ANOTER = "<p><strong>\u00c0 noter</strong>&nbsp;: la consultation avec un chirurgien du rachis a pour objet d'\u00e9valuer l'int\u00e9r\u00eat d'une prise en charge chirurgicale ou d'un geste sp\u00e9cialis\u00e9, comme une infiltration. Pour des conseils de kin\u00e9sith\u00e9rapie, de r\u00e9\u00e9ducation, de semelles orthop\u00e9diques, de matelas ou d'oreiller, votre <strong>m\u00e9decin traitant</strong> \u2014 \u00e9ventuellement accompagn\u00e9 d'un kin\u00e9sith\u00e9rapeute ou d'un rhumatologue \u2014 est le mieux plac\u00e9 pour vous guider au quotidien. L'\u00e9quipe de l'Espace Francilien du Rachis reste naturellement disponible si votre situation \u00e9volue ou si une question chirurgicale se pose un jour&nbsp;: vous pouvez reprendre cette \u00e9valuation \u00e0 tout moment.</p>";
 
 /* ============ MÉMOIRE TEMPORAIRE (navigateur uniquement) ============ */
 let S = {};
@@ -597,7 +602,9 @@ function carte24h(motif){
   exitCard("n2","Avis chirurgical sous 24 à 48 heures",
   `<p>${motifs[motif]||motifs.force}</p>
    <p>Nous vous proposons d'envoyer dès maintenant un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être pris en charge rapidement <strong>en consultation par l'un des chirurgiens de l'équipe</strong>, en vue d'une éventuelle prise en charge chirurgicale.</p>
-   ${souhaitLigne()}${garde}<p class="note">${LOCK}</p>`,
+   ${souhaitLigne()}${garde}
+   <p>Selon les disponibilités, ce premier contact peut se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, avec organisation <strong>immédiate</strong> de l'IRM dans un centre partenaire et consultation au cabinet dans la foulée — le chirurgien doit dans tous les cas vous examiner.</p>
+   ${IMGNOTE}<p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
 }
 function carte72h(motif){
@@ -609,14 +616,36 @@ function carte72h(motif){
   `<p>Votre situation justifie un <strong>rendez-vous avec un chirurgien du rachis pour un avis chirurgical</strong>, sous 48 à 72 heures, avec si besoin une IRM organisée rapidement.</p>
    ${extras[motif]||""}
    <p>Nous vous proposons d'envoyer un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être recontacté(e) et pris(e) en charge <strong>en consultation par l'un des chirurgiens de l'équipe</strong>.</p>
-   ${souhaitLigne()}<p class="note">${LOCK}</p>`,
+   ${souhaitLigne()}
+   <p>Ce premier contact peut aussi se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, organisée rapidement dans un centre partenaire, suivie d'une consultation au cabinet.</p>
+   ${IMGNOTE}<p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
+}
+function carteConsult(){
+  S.orientation="Consultation chirurgicale programmée (sous 2 à 4 semaines)";stat("sortie_consult");
+  exitCard("n5","Consultation chirurgicale programmée (sous 2 à 4 semaines)",
+  `<p>Votre situation justifie une <strong>consultation avec un chirurgien du rachis</strong>, sans caractère d'urgence&nbsp;: un rendez-vous <strong>dans les 2 à 4 semaines</strong> est adapté — plus tôt si un créneau est disponible ou si votre situation évolue.</p>
+   <p>Cette consultation s'adresse aux patients pour lesquels une prise en charge chirurgicale peut se discuter, aujourd'hui ou à l'avenir. Selon votre situation, le chirurgien peut aussi vous proposer un <strong>protocole d'infiltrations</strong> ou une orientation vers un <strong>centre spécialisé de rééducation</strong>.</p>
+   <p>Pour préparer au mieux cette consultation, trois possibilités&nbsp;:<br>— demander à votre <strong>médecin traitant</strong> de vous prescrire une IRM, à réaliser avant le rendez-vous&nbsp;;<br>— ou une <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, suivie d'une consultation au cabinet&nbsp;;<br>— ou prendre <strong>directement rendez-vous</strong>&nbsp;: l'IRM sera organisée si nécessaire dans un centre partenaire, avec la possibilité d'envisager au décours une téléconsultation. Il est indispensable pour cela que le centre d'imagerie permette de consulter les images à distance.</p>
+   ${IMGNOTE}
+   <p class="note">${LOCK}</p>`,
+  [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
+}
+function carteBilan(){
+  S.orientation="Bilan avec le médecin traitant — consultation chirurgicale possible";stat("sortie_bilan");
+  exitCard("n4","Faites le point avec votre médecin traitant",
+  `<p>Votre situation mérite un examen clinique pour être évaluée précisément. Nous vous conseillons d'en parler en premier lieu à votre <strong>médecin traitant</strong>, qui pourra vous examiner et déterminer avec vous si un avis chirurgical est justifié.</p>
+   <p>Si vous le souhaitez, vous pouvez aussi demander dès maintenant une <strong>consultation programmée</strong> avec un chirurgien du rachis (sous 2 à 4 semaines)&nbsp;: le chirurgien évaluera votre situation et vous orientera au mieux.</p>
+   ${ANOTER}
+   <p class="note">${LOCK}</p>`,
+  [{form:true,label:"📤 Demander une consultation via ce site"},{altpdf:true}]);
 }
 function carteMT(){
   S.orientation="Orientation vers le médecin traitant — un avis chirurgical n'est probablement pas nécessaire";stat("sortie_mt");
   exitCard("n4","Un avis chirurgical n'est probablement pas nécessaire",
   `<p>D'après vos réponses, votre douleur ne présente pas, à ce stade, les caractéristiques d'une pathologie relevant d'un avis chirurgical. Elle mérite en revanche une évaluation par votre <strong>médecin traitant</strong>, qui est le bon interlocuteur pour ce type de douleur aiguë — et par l'intermédiaire duquel les chirurgiens de l'Espace Francilien du Rachis restent <strong>joignables si besoin</strong>.</p>
    <p><strong>En cas de doute sur votre état</strong>&nbsp;: appelez le 15, rendez-vous dans un service d'urgences, ou prenez rendez-vous directement sur Doctolib avec le praticien de votre choix.</p>
+   ${ANOTER}
    <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, irradiation dans le bras ou la jambe), reprenez cette évaluation.</p>`,
   [{pdf:true,label:"📄 Télécharger mon récapitulatif"},{href:"https://www.doctolib.fr",label:"Doctolib"},{href:SITE,label:"rachis.paris"}]);
 }
@@ -624,6 +653,7 @@ function carteSuivi(){
   S.orientation="Suivi programmé";stat("sortie_suivi");
   exitCard("n4","Suivi programmé",
   `<p>D'après vos réponses, votre douleur est ancienne et stable, sans signe nécessitant une prise en charge en urgence. Parlez-en en première intention à votre <strong>médecin traitant</strong>. Si vous souhaitez malgré tout une <strong>consultation avec un chirurgien du rachis pour un avis chirurgical</strong>, vous trouverez l'équipe et la prise de rendez-vous classique sur rachis.paris.</p>
+   ${ANOTER}
    <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, douleur brutale après un choc), reprenez cette évaluation ou appelez le 15.</p>`,
   [{href:SITE,label:"Continuer sur rachis.paris"},{pdf:true,label:"📄 Télécharger le PDF"}]);
 }
@@ -649,6 +679,7 @@ function carteParNiveau(sortie){
   if(n==="urgences") return carteUrgences(m==="trauma_urgences"?m:(m==="paralysie_urgences"?"paralysie":m||"fievre"));
   if(n==="24h") return carte24h(m||"force");
   if(n==="72h") return carte72h(m);
+  if(n==="consult") return carteConsult();
   if(n==="mt") return carteMT();
   return carteSuivi();
 }
@@ -804,15 +835,14 @@ async function parisNow(){
 async function courtCircuits(){
   const has=v=>S.signes.includes(v);
   if(has("sphincter")) return carte15();
-  if(has("fievre"))    return carteUrgences("fievre");
+  if(has("fievre"))    return carte15();
   if(has("paralysie")){
     const n=await parisNow();
-    if(n.jour==="samedi"||(n.jour==="vendredi"&&n.heure>=12)) return carteUrgences("paralysie");
-    if(n.jour==="vendredi") return carte24h("paralysie_jour_meme");
-    return carte24h("paralysie_lendemain");
+    const ouvrable=["lundi","mardi","mercredi","jeudi"].includes(n.jour);
+    if(ouvrable&&n.heure<10) return carte24h("paralysie_jour_meme");
+    return carte15();
   }
   if(has("trauma")) return qTraumaType();
-  if(has("osteo")&&S.region==="lombaire") return carte72h("tassement");
   qDescription();
 }
 function qTraumaType(){
@@ -824,7 +854,7 @@ function qTraumaType(){
 function qTraumaDelai(){
   marque(qTraumaDelai);
   ask(`Cet accident a-t-il eu lieu il y a <strong>moins de 24 heures</strong>&nbsp;?`,
-  [["Oui, moins de 24 h",()=>carteUrgences("trauma_urgences")],
+  [["Oui, moins de 24 h",()=>carte15()],
    ["Non, plus de 24 h",()=>{S.signes.push("trauma_ancien");qDescription();}]]);
 }
 
@@ -854,7 +884,7 @@ async function callIA(){
     const data=await r.json();
     if(data.reply){S.messages.push({role:"assistant",content:data.reply+(data.sortie?(NL+"<sortie>"+JSON.stringify(data.sortie)+"</sortie>"):"")});bot(escapeHtml(data.reply));}
     if(data.sortie){removeBar();carteParNiveau(data.sortie);}
-    else if(S.messages.length>=28){removeBar();carteParNiveau({niveau:"mt"});}
+    else if(S.messages.length>=28){removeBar();carteBilan();}
     else showBar();
   }catch(e){
     typing(false);
