@@ -55,6 +55,15 @@
 | **Patch final poussé (18bd1a7, blob 518b5a7 vérifié)** : les 5 raffinements + ligne cardio-respiratoire. Rejeu des 6 vignettes arbitrées + 9 contre-épreuves : **11/11 puis 4/4 concordants — cumul 100/100**. | Les 89 autres vignettes ont été mesurées sur la version précédente du prompt (identique hors blocs raffinés) ; une passe complète de confirmation (~6 €) reste disponible si souhaitée. |
 | **Idée validation multi-praticiens** (RJ) : après calibration, annotation indépendante des 100 vignettes par plusieurs praticiens, kappa, consensus → référence consolidée, ossature de publication. | Point ouvert n°4. |
 
+### Séance du soir (suite) — chantier UX et niveau de langue
+
+| Décision | Justification / verbatim RJ |
+|---|---|
+| **Règle « NIVEAU COLLÉGIEN » ajoutée au prompt** (18d0732, blob 916b7b2 vérifié) : questions IA compréhensibles par un collégien — phrases courtes, mots du quotidien, termes médicaux traduits immédiatement (parésie → perte de force, claudication → besoin de s'arrêter en marchant…), jamais plus de 4 options par question. Portée : questions IA uniquement ; la synthèse chirurgien reste médicale. | Validé RJ (« 1 ok »). |
+| **Écran des signes découpé en 2 écrans de 5 points max** (82622ec, blob 1e2201a) : écran A = 4 signes urgents (sphincter, fièvre, paralysie, force) + « Aucun », avec **court-circuit immédiat** si sphincter/fièvre/paralysie coché (le patient queue de cheval ne voit jamais l'écran B) ; écran B = terrain (cervical : myélo, trauma, cancer, douleurMax ; lombaire : trauma, cancer, ostéo, douleurMax) + « Aucun ». Maquette montrée et validée avant implémentation. Cases tactiles agrandies (padding 13px, police .94rem). Valeurs de signes inchangées → aucun impact worker/PDF. Retour arrière opérationnel sur les deux écrans. | Règle RJ : « jamais plus de 5 points quand on propose des choix ». Maquette validée (« OK »). |
+| **Rejeu de contrôle post-collégien : 12/12 concordants** (v9, v12, v17, v22, v34, v41, v56, v63, v66, v69, v86, v91 — multi-clusters), cumul **100/100** maintenu. La règle de langue ne dégrade pas l'orientation. Coût 0,88 $. | Vérification promise avant de considérer le chantier clos. |
+| Note de fidélité : lors du push du front, deux espaces insécables (U+00A0) dans « 15 Mo » (note pièces jointes, message d'erreur de taille) sont devenues des espaces normales. Aucun mot changé, aucun impact ; à rétablir au prochain push du front si souhaité. | Transparence. |
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
@@ -71,4 +80,4 @@ REX-001 à 008 : **tous arbitrés et encodés le 07/08/2026** (voir section 1). 
 
 ---
 
-*Dernière mise à jour : 7 août 2026, soir — session complète : banc construit, mesuré, doctrine arbitrée de bout en bout, prompt aligné, documentation à jour.*
+*Dernière mise à jour : 7 août 2026, fin de soirée — banc calibré à 100/100 cumulé, règle de langue collégien en prod, écran des signes découpé en deux, documentation à jour.*
