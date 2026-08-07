@@ -586,6 +586,7 @@ function carte15(){
 function carteUrgences(motif){
   const motifs={fievre:"Une fièvre associée à une douleur du rachis doit être explorée sans délai en milieu hospitalier.",
     paralysie:"Une paralysie brutale nécessite un bilan sans attendre le début de semaine.",
+    fievre_postop:"Une fièvre survenant après une chirurgie du rachis doit être explorée sans délai en milieu hospitalier. Prévenez également votre chirurgien : il doit être informé de cette situation.",
     trauma_urgences:"Après un accident récent à haute énergie, le bilan initial (examen complet, scanner) doit être réalisé en milieu hospitalier."};
   S.orientation="Orientation vers les urgences";S.detail=motifs[motif]||"";stat("sortie_urgences");
   exitCard("n1","Rendez-vous aux urgences",
@@ -611,9 +612,10 @@ function carte72h(motif){
   const extras={cancer:"<p>Vous pouvez aussi contacter votre <strong>oncologue</strong> s'il peut vous recevoir plus tôt.</p>",
     tassement:"<p>Apportez vos radiographies si vous en avez. Si une IRM est nécessaire, elle sera organisée par l'équipe.</p>",
     trauma:"<p>Apportez les imageries et comptes rendus des urgences si vous y êtes passé(e).</p>"};
-  S.orientation="Avis chirurgical rapide (48 à 72 heures)";stat("sortie_72h");
-  exitCard("n3","Avis chirurgical rapide (48 à 72 h)",
-  `<p>Votre situation justifie un <strong>rendez-vous avec un chirurgien du rachis pour un avis chirurgical</strong>, sous 48 à 72 heures, avec si besoin une IRM organisée rapidement.</p>
+  const semaine=(motif==="force_semaine");
+  S.orientation=semaine?"Avis chirurgical dans la semaine":"Avis chirurgical rapide (48 à 72 heures)";stat("sortie_72h");
+  exitCard("n3",semaine?"Avis chirurgical dans la semaine":"Avis chirurgical rapide (48 à 72 h)",
+  `<p>Votre situation justifie un <strong>rendez-vous avec un chirurgien du rachis pour un avis chirurgical</strong>, ${semaine?"dans la semaine":"sous 48 à 72 heures"}, avec si besoin une IRM organisée rapidement.</p>
    ${extras[motif]||""}
    <p>Nous vous proposons d'envoyer un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être recontacté(e) et pris(e) en charge <strong>en consultation par l'un des chirurgiens de l'équipe</strong>.</p>
    ${souhaitLigne()}
@@ -640,10 +642,11 @@ function carteBilan(){
    <p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Demander une consultation via ce site"},{altpdf:true}]);
 }
-function carteMT(){
+function carteMT(motif){
   S.orientation="Orientation vers le médecin traitant — un avis chirurgical n'est probablement pas nécessaire";stat("sortie_mt");
   exitCard("n4","Un avis chirurgical n'est probablement pas nécessaire",
   `<p>D'après vos réponses, votre douleur ne présente pas, à ce stade, les caractéristiques d'une pathologie relevant d'un avis chirurgical. Elle mérite en revanche une évaluation par votre <strong>médecin traitant</strong>, qui est le bon interlocuteur pour ce type de douleur aiguë — et par l'intermédiaire duquel les chirurgiens de l'Espace Francilien du Rachis restent <strong>joignables si besoin</strong>.</p>
+   ${motif==="tassement_mt"?"<p>Compte tenu du caractère brutal de votre douleur, il est utile de demander à votre médecin traitant une radiographie du rachis, complétée si besoin par une IRM.</p>":""}
    <p><strong>En cas de doute sur votre état</strong>&nbsp;: appelez le 15, rendez-vous dans un service d'urgences, ou prenez rendez-vous directement sur Doctolib avec le praticien de votre choix.</p>
    ${ANOTER}
    <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, irradiation dans le bras ou la jambe), reprenez cette évaluation.</p>`,
@@ -680,7 +683,7 @@ function carteParNiveau(sortie){
   if(n==="24h") return carte24h(m||"force");
   if(n==="72h") return carte72h(m);
   if(n==="consult") return carteConsult();
-  if(n==="mt") return carteMT();
+  if(n==="mt") return carteMT(m);
   return carteSuivi();
 }
 
