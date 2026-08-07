@@ -2,7 +2,7 @@
  * Urgence'Rachis — Worker Cloudflare (v2 IA)
  * - Sert les fichiers statiques de ./public (binding assets)
  * - POST /api/chat : proxy vers l'API Claude avec prompt système verrouillé
- * - GET  /api/now  : jour + heure à Paris (règle paralysie vendredi < 12 h)
+ * - GET  /api/now  : jour + heure à Paris (créneau paralysie : lundi à jeudi avant 10 h)
  *
  * Secrets / bindings requis (dashboard Cloudflare) :
  *   - Secret   : ANTHROPIC_API_KEY
@@ -53,11 +53,11 @@ CLUSTER QUEUE DE CHEVAL — troubles sphinctériens, anesthésie du siège ou du
 
 CLUSTER INFECTION — fièvre ou frissons + douleur rachidienne → "15" ; UNE SEULE EXCEPTION : chirurgie du rachis dans les 3 derniers mois → "urgences" motif "fievre_postop" (le patient doit aussi prévenir son chirurgien). Contexte évocateur sans fièvre rapportée (geste invasif récent, immunodépression, usage de drogues intraveineuses, sueurs nocturnes) → demande si la température a été mesurée.
 
-CLUSTER FRACTURE — traumatisme haute énergie < 24 h → "15". Haute énergie > 24 h déjà bilanté (imagerie hospitalière normale) → "mt" avec réévaluation si aggravation ; non bilanté → "72h" motif "trauma". Terrain ostéoporotique (ostéoporose, traitement osseux, corticothérapie au long cours) + douleur axiale BRUTALE OU INHABITUELLE → "72h" motif "tassement" ; douleur modérée HABITUELLE sur ce terrain → "mt". 60 ans ou plus + douleur axiale brutale sans signe neurologique → "72h" motif "tassement" (consultation et IRM dans la semaine) ; installation progressive → règles habituelles. Tassement DOCUMENTÉ par imagerie et hyperalgique → "24h" motif "tassement".
+CLUSTER FRACTURE — traumatisme haute énergie < 24 h → "15". Haute énergie > 24 h déjà bilanté (imagerie hospitalière normale) → "mt" avec réévaluation si aggravation ; non bilanté → "72h" motif "trauma". Terrain ostéoporotique (ostéoporose, traitement osseux, corticothérapie au long cours) + douleur axiale BRUTALE OU INHABITUELLE → "72h" motif "tassement" ; douleur modérée HABITUELLE sur ce terrain → "mt". 60 ans ou plus + douleur axiale brutale sans signe neurologique, SANS terrain ostéoporotique connu et SANS corticothérapie au long cours → "mt" motif "tassement_mt" (le médecin traitant prescrit une radiographie du rachis, complétée si besoin par une IRM) ; installation progressive → règles habituelles. Tassement DOCUMENTÉ par imagerie et hyperalgique → "24h" motif "tassement".
 
 CLUSTER TUMEUR — cancer < 5 ans + douleur nouvelle SANS déficit → "mt" motif "cancer_mt" (médecin traitant pour prescription d'IRM) et conseille TOUJOURS de prévenir l'oncologue. Cancer + déficit moteur progressif → "72h" motif "cancer" (IRM organisée + oncologue). Mélanome → privilégie le circuit oncologique ("mt" + oncologue). Douleur insomniante chez un grand fumeur, ou amaigrissement inexpliqué → "mt" avec IRM rapide à demander, SANS faux réconfort.
 
-CLUSTER DÉFICIT MOTEUR (bras ou jambe) — paralysie complète et brutale : lundi à jeudi avant 10 h → "24h" motif "paralysie_jour_meme" ; sinon → "15". Parésie (perte de force partielle) de MOINS de 3-4 jours ou rapidement évolutive → "24h" motif "force". Parésie évoluant depuis PLUS de 3-4 jours et stable → "72h" motif "force_semaine" (consultation dans la semaine, IRM rapide). Déficit apparu après une infiltration ou un geste rachidien récent → "24h" motif "force".
+CLUSTER DÉFICIT MOTEUR (bras ou jambe) — paralysie complète et brutale : lundi à jeudi avant 10 h → "24h" motif "paralysie_jour_meme" ; sinon → "15". Parésie (perte de force partielle) de MOINS de 3-4 jours ou rapidement évolutive → "24h" motif "force". Parésie évoluant depuis PLUS de 3-4 jours et stable → "72h" motif "force_semaine" (la carte affiche alors un délai « dans la semaine », avec IRM rapide). Déficit apparu après une infiltration ou un geste rachidien récent → "24h" motif "force".
 
 CLUSTER MYÉLOPATHIE (cervical uniquement) — la VITESSE d'aggravation commande. Aggravation rapide (échelle d'une semaine), troubles de la marche récents, chutes récentes → "24h" motif "myelopathie". Myélopathie documentée à l'IRM avec souffrance médullaire → "72h" motif "myelopathie". Évolution lente sur des mois, ou signe de Lhermitte isolé stable → "consult" (IRM à organiser via le médecin traitant ou une téléconsultation).
 
@@ -88,7 +88,7 @@ INTERDICTIONS ABSOLUES :
 
 FORMAT DU SIGNAL DE SORTIE : quand tu as assez d'éléments, termine ta réponse par EXACTEMENT ce bloc (et rien après) :
 <sortie>{"niveau":"15|urgences|24h|72h|consult|mt|suivi","motif":"code_court","synthese":"une à deux phrases factuelles destinées au chirurgien, reprenant les éléments cliniques clés"}</sortie>
-Codes motif possibles : sphincter, fievre, fievre_postop, paralysie_urgences, paralysie_jour_meme, force, force_semaine, myelopathie, trauma_urgences, trauma, tassement, cancer, cancer_mt, hyperalgique, candidat, persistante, aigue_simple, conseils, coccyx, extra_rachidien, ancienne_stable.
+Codes motif possibles : sphincter, fievre, fievre_postop, paralysie_urgences, paralysie_jour_meme, force, force_semaine, myelopathie, trauma_urgences, trauma, tassement, tassement_mt, cancer, cancer_mt, hyperalgique, candidat, persistante, aigue_simple, conseils, coccyx, extra_rachidien, ancienne_stable.
 La "synthese" apparaîtra uniquement dans le rapport PDF du patient, jamais à l'écran.`;
 }
 
@@ -100,7 +100,7 @@ async function hashIp(ip) {
 }
 
 const STAT_EVENTS = new Set(["start","region_cervical","region_lombaire","ia_start",
-  "sortie_15","sortie_urgences","sortie_24h","sortie_72h","sortie_consult","sortie_mt","sortie_suivi","sortie_longue",
+  "sortie_15","sortie_urgences","sortie_24h","sortie_72h","sortie_consult","sortie_mt","sortie_suivi","sortie_bilan",
   "pdf","envoi","envoi_site"]);
 
 async function rateLimit(env, ip) {
