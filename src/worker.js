@@ -2,11 +2,14 @@
  * Urgence'Rachis — Worker Cloudflare (v2 IA)
  * - Sert les fichiers statiques de ./public (binding assets)
  * - POST /api/chat : proxy vers l'API Claude avec prompt système verrouillé
+ * - POST /api/eval : banc de concordance (chantier A1) — mort par défaut, voir bloc dédié
  * - GET  /api/now  : jour + heure à Paris (créneau paralysie : lundi à jeudi avant 10 h)
  *
  * Secrets / bindings requis (dashboard Cloudflare) :
  *   - Secret   : ANTHROPIC_API_KEY
  *   - Secrets  : GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (envoi d'emails)
+ *   - Secrets optionnels : ANTHROPIC_EVAL_KEY + EVAL_TOKEN (activent /api/eval ;
+ *     les supprimer désactive l'endpoint)
  *   - KV       : URGENCE_KV (compteur de dépense mensuelle + anti-abus IP)
  * Règles entérinées par le Dr Jameson — juillet 2026.
  */
@@ -320,6 +323,81 @@ export default {
         return Response.json({ error: "envoi" }, { status: 502 });
       }
       return Response.json({ ok: true });
+    }
+
+    // BANC DE CONCORDANCE — /api/eval (chantier A, option A1, validée par RJ le 07/08/2026).
+    // Endpoint MORT PAR DÉFAUT : répond 404 tant que les secrets EVAL_TOKEN et
+    // ANTHROPIC_EVAL_KEY ne sont pas posés. Le désactiver = supprimer les secrets.
+    // Protégé par jeton Bearer ; exempté de la limite IP (usage interne, dépense bornée
+    // par le plafond de la clé d'évaluation dédiée) ; facturé sur ANTHROPIC_EVAL_KEY,
+    // ne touche NI au compteur de dépense de prod NI aux statistiques.
+    // Deux modes :
+    //   - "triage"  : réplique EXACTE du triage de prod (même prompt via systemPrompt,
+    //     même modèle MODEL_PRIMARY, mêmes max_tokens) ; body.ctx {jour, heure} optionnel
+    //     pour rejouer les vignettes dépendantes du créneau paralysie de façon reproductible.
+    //   - "patient" : simulateur de patient pour le dialogue automatique ; prompt système
+    //     fourni par le banc (fiche vignette), modèle économique par défaut.
+    if (url.pathname === "/api/eval" && request.method === "POST") {
+      if (!env.EVAL_TOKEN || !env.ANTHROPIC_EVAL_KEY) {
+        return new Response("Not found", { status: 404 });
+      }
+      const auth = request.headers.get("Authorization") || "";
+      if (auth !== "Bearer " + env.EVAL_TOKEN) {
+        return new Response("Not found", { status: 404 });
+      }
+      let body;
+      try { body = await request.json(); } catch { return Response.json({ error: "corps invalide" }, { status: 400 }); }
+      const mode = body.mode === "patient" ? "patient" : "triage";
+      const messages = Array.isArray(body.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
+      if (!messages.length) {
+        return Response.json({ error: "conversation invalide" }, { status: 400 });
+      }
+      const clean = messages
+        .filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+        .map(m => ({ role: m.role, content: m.content.slice(0, 4000) }));
+      let sys, model, maxTokens;
+      if (mode === "triage") {
+        const ctx = (body.ctx && typeof body.ctx.jour === "string" && Number.isInteger(body.ctx.heure))
+          ? { jour: body.ctx.jour.slice(0, 12), heure: body.ctx.heure }
+          : parisNow();
+        sys = systemPrompt(body.dossier || {}, ctx);
+        model = MODEL_PRIMARY;
+        maxTokens = MAX_TOKENS_REPLY;
+      } else {
+        if (typeof body.system !== "string" || !body.system) {
+          return Response.json({ error: "system manquant" }, { status: 400 });
+        }
+        sys = body.system.slice(0, 20000);
+        model = body.model === MODEL_PRIMARY ? MODEL_PRIMARY : MODEL_FALLBACK;
+        maxTokens = 400;
+      }
+      const api = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": env.ANTHROPIC_EVAL_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: maxTokens,
+          system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
+          messages: clean,
+        }),
+      });
+      if (!api.ok) {
+        const t = await api.text();
+        return Response.json({ error: "api", status: api.status, detail: t.slice(0, 300) }, { status: 502 });
+      }
+      const data = await api.json();
+      const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      let sortie = null, visible = text;
+      const m = text.match(/<sortie>\s*([\s\S]*?)\s*<\/sortie>/);
+      if (m) {
+        try { sortie = JSON.parse(m[1]); } catch { sortie = null; }
+        visible = text.replace(/<sortie>[\s\S]*<\/sortie>/, "").trim();
+      }
+      return Response.json({ reply: visible, sortie, usage: data.usage || null, model });
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
