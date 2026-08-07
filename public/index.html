@@ -167,7 +167,7 @@ h2{font-size:1.5rem;font-weight:700;margin-bottom:12px;letter-spacing:-.2px}
 .go:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(26,188,156,.28)}
 .chat-body>.go{margin-left:40px;margin-top:2px}
 .checklist{display:flex;flex-direction:column;gap:8px;align-self:stretch;margin-left:40px}
-.checklist label{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1.5px solid var(--ligne);border-radius:var(--r-md);padding:10px 12px;font-size:.9rem;cursor:pointer}
+.checklist label{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1.5px solid var(--ligne);border-radius:var(--r-md);padding:13px 12px;font-size:.94rem;cursor:pointer}
 .checklist label:has(input:checked){border-color:var(--rose);background:var(--rose-pale)}
 .checklist input{margin-top:3px;accent-color:var(--rose)}
 .checklist .none:has(input:checked){border-color:var(--turquoise);background:var(--turquoise-pale)}
@@ -779,29 +779,7 @@ function qSouhait(){
   opts.push(["Je ne sais pas encore — un avis d'abord",()=>{S.souhait="avis";qAlarme();}]);
   ask(`Que souhaitez-vous&nbsp;?`,opts);
 }
-function qAlarme(){
-  marque(qAlarme);
-  bot(`Étape importante&nbsp;: cochez tout ce qui correspond à votre situation <strong>actuelle</strong>.`);
-  const cerv=S.region==="cervical";
-  const items=cerv?[
-    ["fievre","Fièvre ou frissons associés à la douleur"],
-    ["sphincter","Difficultés à uriner ou à me retenir, ou perte de sensibilité au niveau du siège"],
-    ["paralysie","Paralysie complète et brutale d'un bras (le membre ne répond plus du tout)"],
-    ["force","Perte de force partielle ou récente du bras ou de la main"],
-    ["myelo","Maladresse des deux mains, troubles de la marche ou de l'équilibre, décharges électriques en penchant la tête"],
-    ["trauma","Ma douleur fait suite à un traumatisme (accident, chute, choc, faux mouvement)"],
-    ["cancer","Cancer diagnostiqué ou traité au cours des 5 dernières années"],
-    ["douleurMax","Douleur très intense malgré les médicaments (nuits impossibles)"]
-  ]:[
-    ["sphincter","Difficultés à uriner ou à me retenir, ou perte de sensibilité entre les jambes / au niveau du siège"],
-    ["fievre","Fièvre ou frissons associés à la douleur"],
-    ["paralysie","Paralysie complète et brutale d'une jambe (le membre ne répond plus du tout)"],
-    ["force","Perte de force partielle ou récente de la jambe ou du pied (pied qui accroche, jambe qui lâche)"],
-    ["trauma","Ma douleur fait suite à un traumatisme (accident, chute, choc, faux mouvement)"],
-    ["cancer","Cancer diagnostiqué ou traité au cours des 5 dernières années"],
-    ["osteo","J'ai de l'ostéoporose, un traitement pour la solidité des os, ou je prends de la cortisone au long cours"],
-    ["douleurMax","Douleur très intense malgré les médicaments (nuits impossibles)"]
-  ];
+function checklistScreen(items, onValid){
   const w=document.createElement("div");w.className="checklist";
   items.forEach(([val,txt])=>{
     const l=document.createElement("label");
@@ -821,13 +799,56 @@ function qAlarme(){
   go.onclick=()=>{
     const checked=[...w.querySelectorAll("input:checked")].map(i=>i.value);
     if(!checked.length)return;
-    S.signes=checked.filter(v=>v!=="aucun");
-    const labels=items.filter(([v])=>S.signes.includes(v)).map(([,t])=>t);
+    const vals=checked.filter(v=>v!=="aucun");
+    const labels=items.filter(([v])=>vals.includes(v)).map(([,t])=>t);
     w.remove();go.remove();
     userMsg(labels.length?labels.join(NL):"Aucun de ces signes");
-    setTimeout(courtCircuits,320);
+    onValid(vals);
   };
   chat.appendChild(w);chat.appendChild(go);ajouterRetour();scrollChat();
+}
+function qAlarme(){
+  marque(qAlarme);
+  bot(`Étape importante&nbsp;: avez-vous, <strong>en ce moment</strong>, l'un de ces signes&nbsp;? Cochez tout ce qui correspond.`);
+  const cerv=S.region==="cervical";
+  const items=cerv?[
+    ["sphincter","Difficultés à uriner ou à me retenir, ou perte de sensibilité au niveau du siège"],
+    ["fievre","Fièvre ou frissons associés à la douleur"],
+    ["paralysie","Paralysie complète et brutale d'un bras (le membre ne répond plus du tout)"],
+    ["force","Perte de force partielle ou récente du bras ou de la main"]
+  ]:[
+    ["sphincter","Difficultés à uriner ou à me retenir, ou perte de sensibilité entre les jambes / au niveau du siège"],
+    ["fievre","Fièvre ou frissons associés à la douleur"],
+    ["paralysie","Paralysie complète et brutale d'une jambe (le membre ne répond plus du tout)"],
+    ["force","Perte de force partielle ou récente de la jambe ou du pied (pied qui accroche, jambe qui lâche)"]
+  ];
+  checklistScreen(items,vals=>{
+    S.signes=vals;
+    if(vals.includes("sphincter")||vals.includes("fievre")||vals.includes("paralysie")){
+      setTimeout(courtCircuits,320);return;
+    }
+    setTimeout(qAlarme2,320);
+  });
+}
+function qAlarme2(){
+  marque(qAlarme2);
+  bot(`Merci. Et concernant votre situation générale&nbsp;? Cochez tout ce qui correspond.`);
+  const cerv=S.region==="cervical";
+  const items=cerv?[
+    ["myelo","Maladresse des deux mains, troubles de la marche ou de l'équilibre, décharges électriques en penchant la tête"],
+    ["trauma","Ma douleur fait suite à un traumatisme (accident, chute, choc, faux mouvement)"],
+    ["cancer","Cancer diagnostiqué ou traité au cours des 5 dernières années"],
+    ["douleurMax","Douleur très intense malgré les médicaments (nuits impossibles)"]
+  ]:[
+    ["trauma","Ma douleur fait suite à un traumatisme (accident, chute, choc, faux mouvement)"],
+    ["cancer","Cancer diagnostiqué ou traité au cours des 5 dernières années"],
+    ["osteo","J'ai de l'ostéoporose, un traitement pour la solidité des os, ou je prends de la cortisone au long cours"],
+    ["douleurMax","Douleur très intense malgré les médicaments (nuits impossibles)"]
+  ];
+  checklistScreen(items,vals=>{
+    S.signes=S.signes.concat(vals);
+    setTimeout(courtCircuits,320);
+  });
 }
 
 /* ============ COURT-CIRCUITS DE SÉCURITÉ (déterministes, sans IA) ============ */
@@ -929,7 +950,7 @@ function openSendForm(){
     <label>Téléphone *<input id="feTel" type="tel" autocomplete="tel" inputmode="tel"></label>
     <label class="fe-full">Adresse email *<input id="feEmail" type="email" autocomplete="email" inputmode="email"></label>
     <label class="fe-full">Message (facultatif)<textarea id="feMsg" placeholder="Précisions utiles : vos disponibilités, votre contexte…"></textarea></label>
-    <label class="fe-full">Pièces jointes (facultatif)<input id="feFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx"><span class="fe-note">Imagerie, comptes rendus, courriers (jusqu'à 15 Mo au total). Les photos sont compressées automatiquement.</span></label>
+    <label class="fe-full">Pièces jointes (facultatif)<input id="feFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx"><span class="fe-note">Imagerie, comptes rendus, courriers (jusqu'à 15 Mo au total). Les photos sont compressées automatiquement.</span></label>
     <label class="fe-consent"><input id="feConsent" type="checkbox"> <span>J'accepte que ces informations et les pièces jointes soient transmises de façon sécurisée (connexion chiffrée) au secrétariat de l'Espace Francilien du Rachis afin d'être recontacté(e) pour une consultation.</span></label>
   </div>
   <div class="fe-err" id="feErr" aria-live="polite"></div>
@@ -1011,7 +1032,7 @@ async function submitForm(){
     bot(`✅ Votre demande a bien été envoyée au secrétariat. Vous serez recontacté(e) par téléphone ou par email pour fixer la consultation. Si votre état s'aggrave d'ici là — fièvre, perte de force, troubles urinaires, paralysie — appelez le 15 sans attendre.`);
   }catch(e){
     btn.disabled=false;btn.textContent="Envoyer ma demande de consultation";
-    if(e&&e.taille) err("Les pièces jointes dépassent 15 Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
+    if(e&&e.taille) err("Les pièces jointes dépassent 15 Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
     else err("L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez. Vous pouvez aussi télécharger votre PDF et l'envoyer vous-même à "+CONTACT_EMAIL+".");
   }
 }
