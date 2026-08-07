@@ -18,6 +18,8 @@
 4. **Ne jamais pousser de contenu de test.** Un push « PLACEHOLDER » a détruit la page
    complète le 06/08 (commit 98ed56e, réparé par 35d904d). Le contenu poussé doit
    toujours être le fichier complet, vérifié localement avant envoi.
+5. **Aucun secret dans une conversation.** Ni clé API, ni jeton OAuth, ni mot de passe.
+   Passer par les secrets Cloudflare ou par un script exécuté par Raphael.
 
 ---
 
@@ -116,7 +118,7 @@ l'annotation par Raphael des 100 vignettes cliniques.
 - **Tassement documenté et hyperalgique** → 24h.
 - **Cancer sans déficit** → `mt` motif `cancer_mt` + prévenir l'oncologue
   (mélanome → circuit onco). **Cancer + déficit progressif** → 72h.
-- **Radiculalgie documaptée stable ou résistante** → `consult` motif `candidat`
+- **Radiculalgie documentée stable ou résistante** → `consult` motif `candidat`
   (2 à 4 semaines — délai validé par RJ le 07/08).
 - **Lombalgie inflammatoire nocturne** : NE PAS exclure du circuit (« plus de
   discopathies dégénératives inflammatoires que de spondylarthropathies »).
@@ -163,6 +165,53 @@ Modèle : `claude-opus-4-8`, bascule sur `claude-sonnet-4-6` au-delà de 50 €/
 
 ---
 
+## LES DEUX CHANTIERS OUVERTS — EN CLAIR
+
+### A. Banc de concordance des 100 vignettes
+
+**À quoi ça sert.** Raphael a annoté 100 vignettes en indiquant l'orientation
+attendue pour chacune. Sa doctrine est désormais encodée dans le prompt du worker.
+Reste à vérifier que **l'IA applique réellement cette doctrine** : rejouer les 100
+cas automatiquement, comparer chaque orientation produite à celle de Raphael, sortir
+un taux de concordance et la liste des désaccords. Dernière mesure manuelle : 62 %.
+**Objectif : ≥ 90 %.** C'est le seul moyen objectif de savoir si le triage est fiable,
+et la référence qui permettra plus tard de juger un changement de modèle.
+
+**Pourquoi c'est bloqué.** Il faut plusieurs centaines d'appels API (chaque vignette
+demande plusieurs tours). Passer par la prod est exclu : plafond de 40 requêtes par
+IP et par jour. Il faut donc appeler l'API Anthropic en direct, ce qui exige une clé —
+or la clé est un secret Cloudflare, invisible depuis une conversation, et une clé ne
+doit jamais transiter par un chat.
+
+**Trois options à soumettre à Raphael :**
+1. Créer une **clé de test dédiée** (révocable) dans la console Anthropic, la poser en
+   secret Cloudflare, et ajouter au worker un endpoint `/api/eval` protégé par clé,
+   que Claude pilote — la clé ne quitte jamais Cloudflare.
+2. Claude écrit un **script autonome** que Raphael exécute sur son poste, la clé
+   restant chez lui ; il renvoie le tableau de résultats.
+3. Relever temporairement la limite par IP — solution la moins propre.
+
+### B. Grille de score G/U (gravité × urgence)
+
+**À quoi ça sert.** Aujourd'hui l'orientation repose entièrement sur le jugement de
+l'IA. La grille ajouterait une **couche déterministe** en parallèle : chaque élément
+clinique reçoit des points sur deux axes — **G** = gravité (que risque-t-on de rater ?)
+et **U** = urgence (combien de temps peut-on attendre ?) — et une matrice G × U
+retombe sur l'un des 7 niveaux.
+
+**Trois bénéfices.**
+- **Auditable** : on peut expliquer pourquoi un patient a été orienté ainsi
+  (intérêt médico-légal).
+- **Filet de sécurité** : en cas de divergence entre la grille et l'IA, retenir le plus
+  urgent — protection contre une dérive du modèle ou un changement de version.
+- **Publiable** : la recherche PubMed a confirmé qu'aucun score patient couvrant tout
+  le rachis n'existe.
+
+**État** : conception à faire, à partir des briques de `docs/BIBLIOGRAPHIE-SCORE.md`,
+puis soumission à Raphael AVANT tout code.
+
+---
+
 ## VEILLE MODÈLES — À ARBITRER PLUS TARD
 
 > Les modèles changent vite. Ce comparatif date du **7 août 2026** : le vérifier
@@ -182,7 +231,7 @@ Modèle : `claude-opus-4-8`, bascule sur `claude-sonnet-4-6` au-delà de 50 €/
 | Réflexion | désactivée sauf demande | **activée par défaut** |
 | Retrait | pas avant le 28 mai 2027 | — |
 
-### ⚠️ Le piquet de migration qui nous concerne
+### ⚠️ Le piège de migration qui nous concerne
 
 Sur Opus 5 la réflexion adaptative est **active par défaut** et ses tokens sont
 facturés au tarif de sortie. Conséquences directes pour ce projet :
@@ -201,16 +250,16 @@ facturés au tarif de sortie. Conséquences directes pour ce projet :
 
 **Ne pas migrer avant la fin de la calibration clinique.** Changer de modèle pendant
 la calibration invaliderait le banc de concordance. Le bon moment : après la mesure
-des 100 vignettes sur Opus 4.8, qui fournira une référence chiffrée pour juger si
-Opus 5 fait mieux. Aucune urgence : Opus 4.8 n'a pas de date de retrait avant
-mai 2027.
+des 100 vignettes sur Opus 4.8, qui fournira une référence chiffrée. Aucune urgence :
+Opus 4.8 n'a pas de date de retrait avant mai 2027.
 
 ### Autres modèles au catalogue (août 2026)
 
 - **Sonnet 5** — génération Sonnet la plus capable ; candidat naturel au remplaçant
   de `claude-sonnet-4-6` en position de repli.
 - **Fable 5** (10 $ / 50 $) et **Mythos 5** (accès restreint, Project Glasswing) —
-  hors sujet pour ce projet : coût double sans bénéfice sur une tâche de triage.
+  coût double d'Opus 5 ; intérêt à évaluer pour la conception (grille G/U,
+  raisonnement clinique complexe), pas pour le triage en production.
 
 ---
 
@@ -220,14 +269,10 @@ mai 2027.
 - **Concordance initiale : 57/92 (62 %)** → 35 désaccords, tous traduits en règles.
 - Répartition de la doctrine finale : 40 médecin traitant · 16 consultation programmée
   · 16 avis 72 h · 10 pour le 15 · 8 avis 24-48 h · 6 suivi · 4 urgences.
-- **Banc de concordance automatisé : À FAIRE.** Rejouer les 100 vignettes contre
-  l'API Anthropic directe (PAS la prod : limite 40 req/IP/jour). Objectif ≥ 90 %.
-  ⚠️ Bloqué : pas de clé API de test. Ne JAMAIS coller de clé ni de jeton dans une
-  conversation — prévoir un secret Cloudflare et un endpoint de test protégé.
 
 ---
 
-## SCORE G/U (gravité × urgence) — CONCEPTION
+## SCORE G/U — BRIQUES BIBLIOGRAPHIQUES
 
 Recherche PubMed structurée effectuée. **Aucun score patient gravité × urgence
 couvrant tout le rachis n'existe.** Briques validées :
@@ -237,8 +282,7 @@ couvrant tout le rachis n'existe.** Briques validées :
 - Cochrane fracture 2023 ; Cochrane malignité 2013 (seul l'ATCD de cancer discrimine).
 - mJOA / AOSpine 2017 ; Kögl 2021 ; Canadian C-Spine Rule / NEXUS ; DART 2024.
 - HAS 2019 (IRM au-delà de 3 mois) ; NICE NG59.
-
-**À faire** : grille G/U référencée (items pondérés + matrice G × U → 7 sorties).
+- ⚠️ Hyperalgie isolée : aucun délai documenté — n'active U que si G est positif.
 
 ---
 
@@ -258,17 +302,17 @@ académique, financements publics.
 
 1. **Test mobile complet** (parcours + formulaire + envoi réel avec photo) — jamais fait.
 2. **Vérifier la prod** après le déploiement des commits 33c310b et b8447ca.
-3. **Phrase de transparence option A** → active les traces (TRACE_ACTIVE=true).
-4. **Clé API Anthropic de test** (via secret Cloudflare) pour le banc de concordance.
+3. **Choisir une option d'accès API** pour le banc de concordance (voir chantier A).
+4. **Phrase de transparence option A** → active les traces (TRACE_ACTIVE=true).
 5. Achat urgence-rachis.fr (~11 €/an, Cloudflare Registrar).
 6. **Renouvellement ANTHROPIC_API_KEY avant le 24/08/2026.**
 7. Décider s'il faut une feuille complémentaire de 15 cas « clusters partiels ».
 
 ## PENDING — Claude
 
-1. **Banc de concordance** des 100 vignettes (objectif ≥ 90 %).
-2. **Grille G/U** référencée à concevoir et soumettre.
-3. **Arbitrage migration Opus 5** (voir VEILLE MODÈLES) — après la calibration.
+1. **Banc de concordance** des 100 vignettes (chantier A, objectif ≥ 90 %).
+2. **Grille G/U** à concevoir et soumettre (chantier B).
+3. **Arbitrage migration Opus 5** — après la calibration.
 4. Safety-netting spécifique par cluster incomplet sur les cartes MT, Suivi et
    Programmée (textes à soumettre).
 5. Régénérer le **PDF des arbres décisionnels** (doctrine v2).
