@@ -80,6 +80,16 @@
 
 **Version en ligne** : v0.9 · 08/08/2026 — worker blob 958f4bc, front blob e3033bf, vérifiés servis en prod.
 
+### Séance du 08/08/2026 (suite) — point légal et pages réglementaires
+
+**Point légalité/déontologie complet présenté à RJ.** Synthèse : deux sujets structurels (qualification dispositif médical MDR/règle 11 — probablement IIa/IIb si qualifié ; flux formulaire nominatif via Gmail non HDS), AI Act (transparence IA : déjà conforme ; obligations « haut risque » annexe III reportées au 02/12/2027 par le Digital Omnibus), déontologie favorable (décret 2020-1662 : libre choix préservé, majorité des parcours vers le MT, pas de promesse d'intervention — la calibration elle-même est la meilleure défense ordinale). **Position RJ : projet-hobby assumé — pas d'avocat ni d'assureur pour l'instant.** Points avocat/RCP/CDOM/AIPD = DORMANTS, consignés sans échéance.
+
+**Pages mentions légales & politique de confidentialité : réalisées par une SESSION PARALLÈLE** (commits a0a1c45 09h19 + ce9d4ba 09h24) — page `/mentions-legales` en ligne, liée au pied de page, insécables « 15 Mo » rétablies en entités au passage. **Audit fait par cette session, rien repoussé** : contenu jugé complet (éditeur 8 rue de Chazelles + directeur de publication, hébergeur Cloudflare, nature du service, transparence IA, deux flux RGPD distingués, sous-traitants dont Google — acheminement des emails du formulaire — et cdnjs, transferts UE–États-Unis, droits/CNIL, conservation rattachée au dossier médical, secret professionnel, réservé aux majeurs). Question mineure ouverte : adresse Chazelles vs centre Oudinot, au choix de RJ.
+
+**Consigne de coordination** : éviter deux conversations Claude poussant sur main simultanément — la collision a été évitée aujourd'hui uniquement grâce à la vérification systématique des SHA avant push.
+
+**État de main** : worker 958f4bc · front (index.html) blob 387a4d7 (ce9d4ba) · docs/mentions : public/mentions-legales.html blob 877a254.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
@@ -88,7 +98,9 @@
 4. **Validation multi-praticiens** (Lamerain, Travert ± rhumato/MT) puis publication.
 5. **CLÉ D'ÉVALUATION À RÉVOQUER** (console Anthropic → API Keys) — campagne terminée.
 6. Piste « ostéophilie » : non encodée, volontairement.
-7. Pendants MEMOIRE.md : renouvellement ANTHROPIC_API_KEY avant le 24/08, test mobile complet, achat urgence-rachis.fr, PDF arbres décisionnels, migration Opus 5 après calibration seulement.
+7. Pendants MEMOIRE.md : renouvellement ANTHROPIC_API_KEY avant le 24/08, test mobile complet (nouveau parcours : 2 écrans de signes + champ conclusion), achat urgence-rachis.fr, PDF arbres décisionnels, migration Opus 5 après calibration seulement.
+8. Adresse des mentions légales : Chazelles (actuel) vs centre Oudinot — au choix de RJ.
+9. DORMANTS (statut hobby assumé le 08/08) : avocat/consultant DM, information assureur RCP, démarche CDOM, AIPD formalisée.
 
 ## 3. REX
 
@@ -96,4 +108,4 @@ REX-001 à 008 : **tous arbitrés et encodés le 07/08/2026** (voir section 1). 
 
 ---
 
-*Dernière mise à jour : 8 août 2026, matin — v0.9 datée en prod, champ « conclusion du radiologue » en signal faible (sondes concordantes), cumul 100/100 maintenu.*
+*Dernière mise à jour : 8 août 2026, milieu de matinée — pages légales en ligne (session parallèle, auditées), statut hobby acté, points juridiques lourds classés dormants.*
