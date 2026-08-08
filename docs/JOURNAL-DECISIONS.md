@@ -64,6 +64,22 @@
 | **Rejeu de contrôle post-collégien : 12/12 concordants** (v9, v12, v17, v22, v34, v41, v56, v63, v66, v69, v86, v91 — multi-clusters), cumul **100/100** maintenu. La règle de langue ne dégrade pas l'orientation. Coût 0,88 $. | Vérification promise avant de considérer le chantier clos. |
 | Note de fidélité : lors du push du front, deux espaces insécables (U+00A0) dans « 15 Mo » (note pièces jointes, message d'erreur de taille) sont devenues des espaces normales. Aucun mot changé, aucun impact ; à rétablir au prochain push du front si souhaité. | Transparence. |
 
+### Séance du 08/08/2026 (matin) — versionnage et conclusion d'imagerie
+
+**Versionnage du site** (commit 625dabd) : format « v0.9 · date » validé (v1.0 à la validation multi-praticiens). Affiché à trois endroits : badge du pied de page, sous-titre du chat, ligne « Généré le… » du rapport PDF. Constantes uniques VERSION / VERSION_DATE dans le script du front.
+
+**Conclusion d'imagerie rapportée par le patient** (commits 35cbaaf worker + f3d77b9 front) : après « imagerie < 3 mois : Oui », question facultative « recopier la conclusion du radiologue » (champ libre + « Passer cette étape »). Décisions validées par RJ :
+- Champ libre OUI — chaînon manquant des exceptions v91 (hernie volumineuse + amélioration → consult) et v69 (anomalie ancienne stable → suivi).
+- Photo du compte rendu NON — l'en-tête contiendrait le nom du patient, contradictoire avec la promesse « aucune donnée nominative » ; le canal photo légitime reste les pièces jointes du formulaire d'envoi (lues par le secrétariat, pas par l'IA). À réévaluer si les patients ne recopient pas.
+- Statut : SIGNAL FAIBLE (dixit RJ : « c'est juste pour orienter avec une faible valeur »). Règle de prompt : peut orienter les questions, ne commande jamais un niveau à elle seule, la clinique prime, ignorée si incohérente.
+- Transmis au dossier IA (conclusion_imagerie) et repris dans le PDF (ligne dédiée, déclaratif).
+
+**Rejeu de contrôle** : 2 sondes ad hoc (probe_conclusion.mjs) — P1 sciatique en amélioration + conclusion « volumineuse hernie L5-S1 » → consult/candidat (exception activée par le champ, comme voulu) ; P2 lombalgie axiale banale + conclusion anxiogène « discopathie étagée, Modic » → mt/aigue_simple (aucune escalade sur la seule foi du compte rendu). Non-régression v12, v41, v69, v91 : 4/4. **Cumul : 100/100 maintenu.** Coût ~0,55 $.
+
+**Limitation du canal de push (à retenir)** : le connecteur GitHub convertit les espaces insécables (U+00A0) en espaces normales à l'émission — constaté deux fois sur « 15 Mo ». Impact purement typographique. Consigne : tout futur push encode les insécables en `&nbsp;` (HTML) ou `\u00a0` (JS), jamais en caractère brut.
+
+**Version en ligne** : v0.9 · 08/08/2026 — worker blob 958f4bc, front blob e3033bf, vérifiés servis en prod.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
@@ -80,4 +96,4 @@ REX-001 à 008 : **tous arbitrés et encodés le 07/08/2026** (voir section 1). 
 
 ---
 
-*Dernière mise à jour : 7 août 2026, fin de soirée — banc calibré à 100/100 cumulé, règle de langue collégien en prod, écran des signes découpé en deux, documentation à jour.*
+*Dernière mise à jour : 8 août 2026, matin — v0.9 datée en prod, champ « conclusion du radiologue » en signal faible (sondes concordantes), cumul 100/100 maintenu.*
