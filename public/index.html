@@ -339,7 +339,7 @@ footer a{color:var(--turquoise)}
       <span class="dot"></span>
       <div>
         <div class="t">Assistant d'orientation</div>
-        <div class="s">Anonyme · Mémoire temporaire uniquement · Ne remplace pas un avis médical</div>
+        <div class="s">Anonyme · Mémoire temporaire uniquement · Ne remplace pas un avis médical · <span class="ver"></span></div>
       </div>
     </div>
     <div class="chat-body" id="chat"></div>
@@ -441,7 +441,7 @@ footer a{color:var(--turquoise)}
 
 <footer>
   <div class="wrap">
-    <span class="foot-badge">Version d'essai — en cours de validation médicale</span>
+    <span class="foot-badge">Version d'essai — <span class="ver"></span> · en cours de validation médicale</span>
     <p>Urgence'Rachis est un outil d'orientation. Il ne constitue pas un avis médical, ne pose aucun diagnostic et ne remplace ni une consultation, ni un appel au 15 en cas d'urgence. Au moindre doute, rendez-vous aux urgences les plus proches de votre domicile.</p>
     <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris">rachis.paris</a></p>
   </div>
@@ -450,6 +450,9 @@ footer a{color:var(--turquoise)}
 <script>
 /* ============ CONFIGURATION ============ */
 const NL = String.fromCharCode(10);
+const VERSION = "0.9";
+const VERSION_DATE = "07/08/2026";
+const VERSION_TAG = "v" + VERSION + " \u00b7 " + VERSION_DATE;
 const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
 const NOTE = "⚠️ Cette évaluation est <strong>non médicale</strong> et fournie à titre indicatif. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de doute&nbsp;: appelez le 15 ou rendez-vous aux urgences.";
@@ -1056,7 +1059,7 @@ function buildPDF(){
   doc.text("Espace Francilien du Rachis · Version d'essai · Document généré localement par le patient",M,18);
   y=36;
   const now=new Date();
-  line("Généré le "+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" à "+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),{size:9,color:[100,116,139],gap:4});
+  line("Généré le "+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" à "+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · Urgence'Rachis "+VERSION_TAG,{size:9,color:[100,116,139],gap:4});
   line("ORIENTATION PROPOSÉE",{bold:true,size:11,color:[0,51,102]});
   line(S.orientation||"—",{bold:true,size:12,color:[229,72,77],gap:1});
   if(S.synthese) line("Synthèse de l'assistant : "+S.synthese,{size:10,gap:4}); else y+=4;
@@ -1079,6 +1082,7 @@ function buildPDF(){
 function makePDF(){stat("pdf");buildPDF().save("urgence-rachis-rapport.pdf");}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vu");io.unobserve(e.target);}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+document.querySelectorAll(".ver").forEach(el=>el.textContent=VERSION_TAG);
 start();
 </script>
 </body>
