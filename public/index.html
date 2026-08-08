@@ -443,7 +443,7 @@ footer a{color:var(--turquoise)}
   <div class="wrap">
     <span class="foot-badge">Version d'essai — <span class="ver"></span> · en cours de validation médicale</span>
     <p>Urgence'Rachis est un outil d'orientation. Il ne constitue pas un avis médical, ne pose aucun diagnostic et ne remplace ni une consultation, ni un appel au 15 en cas d'urgence. Au moindre doute, rendez-vous aux urgences les plus proches de votre domicile.</p>
-    <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris">rachis.paris</a></p>
+    <p>Créé par le Dr Raphaël Jameson — Espace Francilien du Rachis · <a href="https://rachis.paris">rachis.paris</a> · <a href="/mentions-legales.html">Mentions légales &amp; confidentialité</a></p>
   </div>
 </footer>
 
@@ -965,7 +965,7 @@ function openSendForm(){
     <label>Téléphone *<input id="feTel" type="tel" autocomplete="tel" inputmode="tel"></label>
     <label class="fe-full">Adresse email *<input id="feEmail" type="email" autocomplete="email" inputmode="email"></label>
     <label class="fe-full">Message (facultatif)<textarea id="feMsg" placeholder="Précisions utiles : vos disponibilités, votre contexte…"></textarea></label>
-    <label class="fe-full">Pièces jointes (facultatif)<input id="feFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx"><span class="fe-note">Imagerie, comptes rendus, courriers (jusqu'à 15 Mo au total). Les photos sont compressées automatiquement.</span></label>
+    <label class="fe-full">Pièces jointes (facultatif)<input id="feFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx"><span class="fe-note">Imagerie, comptes rendus, courriers (jusqu'à 15&nbsp;Mo au total). Les photos sont compressées automatiquement.</span></label>
     <label class="fe-consent"><input id="feConsent" type="checkbox"> <span>J'accepte que ces informations et les pièces jointes soient transmises de façon sécurisée (connexion chiffrée) au secrétariat de l'Espace Francilien du Rachis afin d'être recontacté(e) pour une consultation.</span></label>
   </div>
   <div class="fe-err" id="feErr" aria-live="polite"></div>
@@ -1047,7 +1047,7 @@ async function submitForm(){
     bot(`✅ Votre demande a bien été envoyée au secrétariat. Vous serez recontacté(e) par téléphone ou par email pour fixer la consultation. Si votre état s'aggrave d'ici là — fièvre, perte de force, troubles urinaires, paralysie — appelez le 15 sans attendre.`);
   }catch(e){
     btn.disabled=false;btn.textContent="Envoyer ma demande de consultation";
-    if(e&&e.taille) err("Les pièces jointes dépassent 15 Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
+    if(e&&e.taille) err("Les pièces jointes dépassent 15\u00a0Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
     else err("L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez. Vous pouvez aussi télécharger votre PDF et l'envoyer vous-même à "+CONTACT_EMAIL+".");
   }
 }
