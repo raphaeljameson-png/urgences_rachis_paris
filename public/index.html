@@ -451,7 +451,7 @@ footer a{color:var(--turquoise)}
 /* ============ CONFIGURATION ============ */
 const NL = String.fromCharCode(10);
 const VERSION = "0.9";
-const VERSION_DATE = "07/08/2026";
+const VERSION_DATE = "08/08/2026";
 const VERSION_TAG = "v" + VERSION + " \u00b7 " + VERSION_DATE;
 const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
@@ -462,7 +462,7 @@ const ANOTER = "<p><strong>À noter</strong>&nbsp;: la consultation avec un chir
 
 /* ============ MÉMOIRE TEMPORAIRE (navigateur uniquement) ============ */
 let S = {};
-function resetState(){ S={region:null,sexe:null,age:null,lateralite:null,irradiation:null,anciennete:null,evolution:null,imagerie:null,imagerieRecente:null,souhait:null,signes:[],description:"",messages:[],synthese:"",orientation:null,detail:""}; }
+function resetState(){ S={region:null,sexe:null,age:null,lateralite:null,irradiation:null,anciennete:null,evolution:null,imagerie:null,imagerieRecente:null,conclusionImagerie:"",souhait:null,signes:[],description:"",messages:[],synthese:"",orientation:null,detail:""}; }
 
 /* ============ STATISTIQUES ANONYMES AGRÉGÉES ============ */
 function stat(ev){ try{ fetch("/api/stat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({event:ev})}); }catch(e){} }
@@ -768,8 +768,20 @@ function qImagerie(){
 function qImagerieDate(){
   marque(qImagerieDate);
   ask(`Cette imagerie date-t-elle de <strong>moins de 3 mois</strong>&nbsp;?`,
-  [["Oui",()=>{S.imagerieRecente="Oui";qSouhait();}],
+  [["Oui",()=>{S.imagerieRecente="Oui";qConclusion();}],
    ["Non",()=>{S.imagerieRecente="Non";qSouhait();}]]);
+}
+function qConclusion(){
+  marque(qConclusion);
+  bot(`Si vous avez le compte rendu sous les yeux, vous pouvez recopier ici la <strong>conclusion</strong> du radiologue — c'est facultatif, quelques lignes suffisent.`);
+  const w=document.createElement("div");w.className="field wide";
+  const el=document.createElement("textarea");el.placeholder="Conclusion du compte rendu (facultatif)…";
+  const go=document.createElement("button");go.className="go";go.textContent="Valider";
+  const skip=document.createElement("button");skip.className="restart";skip.textContent="Passer cette étape";
+  const suite=(msg,val)=>{w.remove();skip.remove();userMsg(msg);S.conclusionImagerie=val;setTimeout(qSouhait,300);};
+  go.onclick=()=>{const v=el.value.trim();if(!v){suite("Passer cette étape","");return;}suite(v,v);};
+  skip.onclick=()=>suite("Passer cette étape","");
+  w.appendChild(el);w.appendChild(go);chat.appendChild(w);chat.appendChild(skip);ajouterRetour();scrollChat();
 }
 function qSouhait(){
   marque(qSouhait);
@@ -896,7 +908,7 @@ function qDescription(){
 function dossier(){
   return {region:S.region,sexe:S.sexe,age:S.age,lateralite:S.lateralite,
     irradiation:S.irradiation,anciennete:S.anciennete,evolution:S.evolution,
-    imagerie:S.imagerie,imagerie_moins_3_mois:S.imagerieRecente,
+    imagerie:S.imagerie,imagerie_moins_3_mois:S.imagerieRecente,conclusion_imagerie:S.conclusionImagerie||null,
     souhait_patient:S.souhait==="rdv"?"rendez-vous chirurgical":(S.souhait==="irm"?"rendez-vous chirurgical + IRM rapide organisée":"avis d'abord"),
     signes_coches:S.signes,description:S.description};
 }
@@ -1069,6 +1081,7 @@ function buildPDF(){
   line("Irradiation : "+(S.irradiation||"—"));
   line("Ancienneté : "+(S.anciennete||"—")+"   ·   Évolution : "+(S.evolution||"—"));
   line("Imagerie : "+(S.imagerie||"—")+(S.imagerieRecente?(" (moins de 3 mois : "+S.imagerieRecente+")"):""));
+  if(S.conclusionImagerie) line("Conclusion d'imagerie rapportée par le patient : "+S.conclusionImagerie);
   line("Souhait exprimé : "+(S.souhait==="rdv"?"Rendez-vous chirurgical":(S.souhait==="irm"?"Rendez-vous chirurgical + IRM rapide":"Un avis d'abord")),{gap:4});
   line("DESCRIPTION PAR LE PATIENT",{bold:true,size:11,color:[0,51,102]});
   line(S.description||"(non renseignée)",{gap:4});
