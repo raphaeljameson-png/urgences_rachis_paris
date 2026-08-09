@@ -686,7 +686,7 @@ function carteParNiveau(sortie){
   if(n==="24h") return carte24h(m||"force");
   if(n==="72h") return carte72h(m);
   if(n==="consult") return carteConsult();
-  if(n==="mt") return carteMT(m);
+  if(n==="mt") return m==="bilan"?carteBilan():carteMT(m);
   return carteSuivi();
 }
 
