@@ -90,6 +90,21 @@
 
 **État de main** : worker 958f4bc · front (index.html) blob 387a4d7 (ce9d4ba) · docs/mentions : public/mentions-legales.html blob 877a254.
 
+### Séance du 09/08/2026 — correctif sténose après le premier test mobile de RJ
+
+**Premier test en conditions réelles (RJ, mobile)** : patiente-type 65 ans, gêne des deux jambes à la marche, périmètre ~500 m, soulagement penchée en avant, scanner < 3 mois avec conclusion rapportée « Mon canal est rétréci », souhait de rendez-vous chirurgical, terrain ostéoporotique → sortie **mt** avec carte « un avis chirurgical n'est probablement pas nécessaire », en contradiction avec la synthèse. Verdict RJ : « Là ça va pas du tout » — « Elle aurait dû être consult. Elle a une sténose, est gênée et doit voir un chirurgien. »
+
+**Trois causes identifiées, trois correctifs validés mot à mot par RJ (« Ok ») :**
+1. **Règle STÉNOSE DOCUMENTÉE** (bloc canal lombaire étroit) : imagerie — compte rendu rapporté par le patient inclus, dès lors qu'il est concordant avec le tableau — montrant un canal rétréci chez un patient gêné à la marche (claudication même INCOMPLÈTE, même en amélioration) → **consult motif candidat** (2-4 semaines ; 10-15 j si le périmètre se réduit). La branche « mt avec bilan » est réservée aux tableaux vagues SANS imagerie concordante : quand la sténose est déjà vue, le bilan d'origine est fait, c'est la consultation qui fait le point. Parallèle assumé de v91 : le compte rendu rapporté compte, et le niveau déclenché reste non urgent (la consultation vérifie les vraies images).
+2. **Seuil de périmètre** : un périmètre chiffré de l'ordre de 500 mètres ou moins = LIMITÉ ; « conservé » = de l'ordre du kilomètre ou plus (le périmètre de la patiente-test avait été jugé « conservé » à tort).
+3. **Motif « bilan »** : les deux branches mt du canal étroit portent désormais le motif « bilan », ajouté à la liste des codes, et le front route mt+bilan vers la carte « Faites le point avec votre médecin traitant » (bilan + porte ouverte à la demande de consultation). Cette carte existait mais était INATTEIGNABLE — aucun motif ne la déclenchait ; l'IA affichait à la place « un avis chirurgical n'est probablement pas nécessaire ».
+
+**Poussé** : worker commit 67dfe48 (blob a508d7f — inclut deux renvois de cohérence : le bloc anomalie structurale et la règle conclusion_imagerie pointent vers la règle sténose documentée) ; front commit c8224c3 (blob d97afad, égalité vérifiée avec le hash local avant push). 46/46 tests revalidés sur la version réellement poussée après resynchronisation du banc local.
+
+**Rejeu de contrôle** (probe_stenose.mjs) : P3 = scénario exact du test de RJ → **consult/candidat** (synthèse fidèle : claudication typique, périmètre 500 m limité, sténose documentée concordante) ; P4 contre-épreuve vague sans imagerie (périmètre conservé 1-2 km, pas de soulagement en flexion) → **mt/bilan** → carte bilan. Non-régression v66 (→ mt/bilan, niveau inchangé, carte améliorée), v91, v69 : 3/3. **Cumul : 100/100 maintenu.** Coût ~0,4 $.
+
+**État de main** : worker blob a508d7f · front blob d97afad · v0.9 · 08/08/2026.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
@@ -98,14 +113,14 @@
 4. **Validation multi-praticiens** (Lamerain, Travert ± rhumato/MT) puis publication.
 5. **CLÉ D'ÉVALUATION À RÉVOQUER** (console Anthropic → API Keys) — campagne terminée.
 6. Piste « ostéophilie » : non encodée, volontairement.
-7. Pendants MEMOIRE.md : renouvellement ANTHROPIC_API_KEY avant le 24/08, test mobile complet (nouveau parcours : 2 écrans de signes + champ conclusion), achat urgence-rachis.fr, PDF arbres décisionnels, migration Opus 5 après calibration seulement.
+7. Pendants MEMOIRE.md : renouvellement ANTHROPIC_API_KEY avant le 24/08, **re-test mobile par RJ du scénario sténose corrigé** (le premier test du 09/08 a révélé le trou, désormais corrigé), achat urgence-rachis.fr, PDF arbres décisionnels, migration Opus 5 après calibration seulement.
 8. Adresse des mentions légales : Chazelles (actuel) vs centre Oudinot — au choix de RJ.
 9. DORMANTS (statut hobby assumé le 08/08) : avocat/consultant DM, information assureur RCP, démarche CDOM, AIPD formalisée.
 
 ## 3. REX
 
-REX-001 à 008 : **tous arbitrés et encodés le 07/08/2026** (voir section 1). Score final : 62 % → 82 % → 94 % → 100/100 cumulé après micro-arbitrages. Prochains REX : passe de confirmation éventuelle, puis traces de vie réelle.
+REX-001 à 008 : **tous arbitrés et encodés le 07/08/2026** (voir section 1). Score final : 62 % → 82 % → 94 % → 100/100 cumulé après micro-arbitrages. Prochains REX : passe de confirmation éventuelle, puis traces de vie réelle. **REX de vie réelle n°1 (09/08)** : premier test mobile de RJ → sous-triage sténose documentée, corrigé le jour même (voir séance du 09/08).
 
 ---
 
-*Dernière mise à jour : 8 août 2026, milieu de matinée — pages légales en ligne (session parallèle, auditées), statut hobby acté, points juridiques lourds classés dormants.*
+*Dernière mise à jour : 9 août 2026 — correctif sténose documentée (consult) + carte bilan rendue atteignable (motif « bilan »), sondes P3/P4 concordantes, cumul 100/100 maintenu.*
