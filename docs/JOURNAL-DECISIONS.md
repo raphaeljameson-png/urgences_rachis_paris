@@ -148,6 +148,31 @@ artifact « Maquette Urgence'Rachis ». Implémentation = remplacement du seul b
 Montserrat 400 ajoutée). **Body vérifié byte-identique** : aucun texte patient,
 aucune ligne de JS, aucune règle d'orientation modifiés. `node --check` OK.
 
+### Séance du 20/08/2026 (soir) — REX de vie réelle n° 2 : cartes incohérentes pour un patient déjà imagé
+
+**Constat RJ (test réel, rapport PDF du 20/08 21h22)** : homme 73 ans, myélopathie
+cervicale lente, IRM < 3 mois (« hernie discale et arthrose ») → orientation
+`consult` CONFORME à la doctrine, mais la carte propose « demander à votre
+médecin traitant de vous prescrire une IRM » / « l'IRM sera organisée si
+nécessaire ». Verdict RJ : « Ça n'est pas cohérent. »
+
+**Cause** : les cartes `consult`, `72h` et `24h` sont des textes fixes écrits pour
+le patient non imagé ; la condition `dispenseIRM` (scanner ou IRM < 3 mois)
+n'existait qu'à l'étape « Que souhaitez-vous ? » (masquage de l'option « + IRM »).
+
+**Correctif validé mot à mot par RJ (« ok »)** : fonction `dejaImage()` (même
+condition — les radiographies ne dispensent pas) et variante conditionnelle des
+paragraphes de préparation sur les trois cartes : imagé → « Vous disposez déjà
+d'une imagerie récente… deux possibilités (rendez-vous direct avec ses images /
+téléconsultation pour un premier point), complément d'imagerie organisé par le
+chirurgien si utile » ; non imagé → textes inchangés. IMGNOTE (CD-ROM / codes
+d'accès) conservée dans tous les cas. Front uniquement, aucune règle
+d'orientation ni prompt modifiés.
+
+**Vérification** : `node --check` OK + **test de rendu Chromium 6/6** (chaque
+carte dans les deux états ; contre-épreuve radios récentes → textes non imagé,
+comme voulu).
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.

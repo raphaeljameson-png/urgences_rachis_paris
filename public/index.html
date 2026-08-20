@@ -581,6 +581,9 @@ function souhaitLigne(){
   if(S.souhait==="irm") return "<p>Vous avez indiqué souhaiter une IRM rapide&nbsp;: elle sera organisée en coordination avec la consultation.</p>";
   return "";
 }
+/* Scanner ou IRM de moins de 3 mois : les cartes ne proposent plus d'organiser
+   une IRM (même condition que le masquage de l'option « + IRM » à l'étape souhait). */
+function dejaImage(){return (S.imagerie==="Scanner"||S.imagerie==="IRM")&&S.imagerieRecente==="Oui";}
 function carte15(){
   S.orientation="Urgence immédiate — appeler le 15";stat("sortie_15");
   exitCard("n1","⚠️ Appelez le 15 maintenant",
@@ -603,12 +606,15 @@ function carte24h(motif){
     paralysie_lendemain:"Une paralysie brutale nécessite un <strong>avis chirurgical dès demain matin</strong>.",
     paralysie_jour_meme:"Votre situation nécessite un <strong>avis chirurgical aujourd'hui même</strong>."};
   const garde=(motif&&motif.startsWith("paralysie"))?"<p><strong>Sans rappel rapide du secrétariat, ou en cas d'aggravation&nbsp;: rendez-vous aux urgences ou appelez le 15.</strong></p>":"";
+  const tc=dejaImage()
+    ?"<p>Selon les disponibilités, ce premier contact peut se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, sur la base de votre imagerie récente, avec consultation au cabinet dans la foulée — le chirurgien doit dans tous les cas vous examiner. Si un complément d'imagerie est nécessaire, il sera organisé <strong>immédiatement</strong> dans un centre partenaire.</p>"
+    :"<p>Selon les disponibilités, ce premier contact peut se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, avec organisation <strong>immédiate</strong> de l'IRM dans un centre partenaire et consultation au cabinet dans la foulée — le chirurgien doit dans tous les cas vous examiner.</p>";
   S.orientation="Avis chirurgical sous 24 à 48 heures";S.detail=(motifs[motif]||"").replace(/<[^>]+>/g,"");stat("sortie_24h");
   exitCard("n2","Avis chirurgical sous 24 à 48 heures",
   `<p>${motifs[motif]||motifs.force}</p>
    <p>Nous vous proposons d'envoyer dès maintenant un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être pris en charge rapidement <strong>en consultation par l'un des chirurgiens de l'équipe</strong>, en vue d'une éventuelle prise en charge chirurgicale.</p>
    ${souhaitLigne()}${garde}
-   <p>Selon les disponibilités, ce premier contact peut se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, avec organisation <strong>immédiate</strong> de l'IRM dans un centre partenaire et consultation au cabinet dans la foulée — le chirurgien doit dans tous les cas vous examiner.</p>
+   ${tc}
    ${IMGNOTE}<p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
 }
@@ -617,22 +623,29 @@ function carte72h(motif){
     tassement:"<p>Apportez vos radiographies si vous en avez. Si une IRM est nécessaire, elle sera organisée par l'équipe.</p>",
     trauma:"<p>Apportez les imageries et comptes rendus des urgences si vous y êtes passé(e).</p>"};
   const semaine=(motif==="force_semaine");
+  const irm1=dejaImage()?"en venant avec votre imagerie récente":"avec si besoin une IRM organisée rapidement";
+  const tc=dejaImage()
+    ?"<p>Ce premier contact peut aussi se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier point sur la base de votre imagerie récente, suivie d'une consultation au cabinet.</p>"
+    :"<p>Ce premier contact peut aussi se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, organisée rapidement dans un centre partenaire, suivie d'une consultation au cabinet.</p>";
   S.orientation=semaine?"Avis chirurgical dans la semaine":"Avis chirurgical rapide (48 à 72 heures)";stat("sortie_72h");
   exitCard("n3",semaine?"Avis chirurgical dans la semaine":"Avis chirurgical rapide (48 à 72 h)",
-  `<p>Votre situation justifie un <strong>rendez-vous avec un chirurgien du rachis pour un avis chirurgical</strong>, ${semaine?"dans la semaine":"sous 48 à 72 heures"}, avec si besoin une IRM organisée rapidement.</p>
+  `<p>Votre situation justifie un <strong>rendez-vous avec un chirurgien du rachis pour un avis chirurgical</strong>, ${semaine?"dans la semaine":"sous 48 à 72 heures"}, ${irm1}.</p>
    ${extras[motif]||""}
    <p>Nous vous proposons d'envoyer un <strong>message au secrétariat</strong>, accompagné de votre rapport, pour être recontacté(e) et pris(e) en charge <strong>en consultation par l'un des chirurgiens de l'équipe</strong>.</p>
    ${souhaitLigne()}
-   <p>Ce premier contact peut aussi se faire en <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, organisée rapidement dans un centre partenaire, suivie d'une consultation au cabinet.</p>
+   ${tc}
    ${IMGNOTE}<p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
 }
 function carteConsult(){
   S.orientation="Consultation chirurgicale programmée (sous 2 à 4 semaines)";stat("sortie_consult");
+  const prep=dejaImage()
+    ?"<p>Vous disposez déjà d'une <strong>imagerie récente</strong> (moins de 3 mois)&nbsp;: il n'est pas nécessaire d'en refaire une avant la consultation. Deux possibilités&nbsp;:<br>— prendre <strong>directement rendez-vous</strong> en consultation, en venant avec vos images&nbsp;;<br>— ou commencer par une <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier point sur votre dossier, suivie d'une consultation au cabinet. Il est indispensable pour cela que le centre d'imagerie permette de consulter les images à distance.<br>Si un complément d'imagerie s'avère utile, le chirurgien l'organisera avec vous.</p>"
+    :"<p>Pour préparer au mieux cette consultation, trois possibilités&nbsp;:<br>— demander à votre <strong>médecin traitant</strong> de vous prescrire une IRM, à réaliser avant le rendez-vous&nbsp;;<br>— ou une <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, suivie d'une consultation au cabinet&nbsp;;<br>— ou prendre <strong>directement rendez-vous</strong>&nbsp;: l'IRM sera organisée si nécessaire dans un centre partenaire, avec la possibilité d'envisager au décours une téléconsultation. Il est indispensable pour cela que le centre d'imagerie permette de consulter les images à distance.</p>";
   exitCard("n5","Consultation chirurgicale programmée (sous 2 à 4 semaines)",
   `<p>Votre situation justifie une <strong>consultation avec un chirurgien du rachis</strong>, sans caractère d'urgence&nbsp;: un rendez-vous <strong>dans les 2 à 4 semaines</strong> est adapté — plus tôt si un créneau est disponible ou si votre situation évolue.</p>
    <p>Cette consultation s'adresse aux patients pour lesquels une prise en charge chirurgicale peut se discuter, aujourd'hui ou à l'avenir. Selon votre situation, le chirurgien peut aussi vous proposer un <strong>protocole d'infiltrations</strong> ou une orientation vers un <strong>centre spécialisé de rééducation</strong>.</p>
-   <p>Pour préparer au mieux cette consultation, trois possibilités&nbsp;:<br>— demander à votre <strong>médecin traitant</strong> de vous prescrire une IRM, à réaliser avant le rendez-vous&nbsp;;<br>— ou une <strong>téléconsultation</strong> avec l'un des chirurgiens de l'équipe, pour un premier bilan et la prescription de l'IRM, suivie d'une consultation au cabinet&nbsp;;<br>— ou prendre <strong>directement rendez-vous</strong>&nbsp;: l'IRM sera organisée si nécessaire dans un centre partenaire, avec la possibilité d'envisager au décours une téléconsultation. Il est indispensable pour cela que le centre d'imagerie permette de consulter les images à distance.</p>
+   ${prep}
    ${IMGNOTE}
    <p class="note">${LOCK}</p>`,
   [{form:true,label:"📤 Envoyer ma demande via ce site (recommandé)"},{altpdf:true}]);
@@ -789,7 +802,7 @@ function qSouhait(){
   /* Scanner ou IRM de moins de 3 mois : imagerie suffisante, on ne propose plus
      d'organiser une IRM — seulement l'avis chirurgical. Les radiographies, elles,
      ne dispensent pas d'une IRM. */
-  const dispenseIRM=(S.imagerie==="Scanner"||S.imagerie==="IRM")&&S.imagerieRecente==="Oui";
+  const dispenseIRM=dejaImage();
   const opts=[["Un rendez-vous chirurgical",()=>{S.souhait="rdv";qAlarme();}]];
   if(!dispenseIRM) opts.push(["Un rendez-vous chirurgical + IRM rapide organisée",()=>{S.souhait="irm";qAlarme();}]);
   opts.push(["Je ne sais pas encore — un avis d'abord",()=>{S.souhait="avis";qAlarme();}]);
