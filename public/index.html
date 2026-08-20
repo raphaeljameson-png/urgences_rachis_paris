@@ -8,7 +8,7 @@
 <meta name="description" content="Outil d'orientation des urgences du rachis : décrivez vos symptômes et évaluez si votre situation nécessite une prise en charge rapide. Créé par le Dr Raphaël Jameson, Espace Francilien du Rachis.">
 <meta name="theme-color" content="#003366">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Raleway:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -451,7 +451,7 @@ footer a{color:var(--turquoise)}
 /* ============ CONFIGURATION ============ */
 const NL = String.fromCharCode(10);
 const VERSION = "0.9";
-const VERSION_DATE = "08/08/2026";
+const VERSION_DATE = "20/08/2026";
 const VERSION_TAG = "v" + VERSION + " \u00b7 " + VERSION_DATE;
 const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
@@ -918,7 +918,7 @@ async function callIA(){
     const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({messages:S.messages,dossier:dossier()})});
     typing(false);
-    if(r.status===429){bot("Le service a atteint sa limite d'utilisation pour aujourd'hui. En cas de doute sur votre état, appelez le 15 ou consultez votre médecin traitant.");return;}
+    if(r.status===429){removeBar();bot("Le service est très sollicité aujourd'hui et ne peut pas terminer l'analyse.");carteBilan();return;}
     if(!r.ok) throw new Error("api");
     const data=await r.json();
     if(data.reply){S.messages.push({role:"assistant",content:data.reply+(data.sortie?(NL+"<sortie>"+JSON.stringify(data.sortie)+"</sortie>"):"")});bot(escapeHtml(data.reply));}
@@ -1037,7 +1037,10 @@ async function submitForm(){
       if(total>15*1024*1024) throw {taille:true};
       atts.push({filename,mimeType,dataB64});
     }
-    const rapportB64=buildPDF().output("datauristring").split(",")[1];
+    /* Secours : si jsPDF est indisponible, la demande part SANS le rapport joint
+       (le dossier texte suffit au secrétariat) plutôt que d'échouer. */
+    let rapportB64=null;
+    try{rapportB64=buildPDF().output("datauristring").split(",")[1];}catch(e){}
     const r=await fetch("/api/send",{method:"POST",headers:{"content-type":"application/json"},
       body:JSON.stringify({nom,prenom,ddn,tel,email,message:g("feMsg").value.trim(),consent:true,
         orientation:S.orientation||"",synthese:S.synthese||"",attachments:atts,rapportB64})});
