@@ -427,19 +427,19 @@ export default {
       const ctx = parisNow();
       const sys = systemPrompt(body.dossier || {}, ctx);
 
+      const headers = {
+        "content-type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      };
+      const payload = maxTok => JSON.stringify({
+        model,
+        max_tokens: maxTok,
+        system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
+        messages: clean,
+      });
       const api = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: MAX_TOKENS_REPLY,
-          system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
-          messages: clean,
-        }),
+        method: "POST", headers, body: payload(MAX_TOKENS_REPLY),
       });
 
       if (!api.ok) {
@@ -447,10 +447,25 @@ export default {
         console.log("API error", api.status, t.slice(0, 300));
         return Response.json({ error: "service indisponible" }, { status: 502 });
       }
-      const data = await api.json();
+      let data = await api.json();
       await addSpend(env, model, data.usage);
 
-      const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      let text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      // Garde troncature : réponse coupée par max_tokens sans bloc <sortie> complet →
+      // un second essai unique avec un plafond doublé, sinon le signal d'orientation
+      // serait perdu et le patient tournerait jusqu'au fallback des 28 tours.
+      if (data.stop_reason === "max_tokens" && !text.includes("</sortie>")) {
+        const retry = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST", headers, body: payload(MAX_TOKENS_REPLY * 2),
+        });
+        if (retry.ok) {
+          data = await retry.json();
+          await addSpend(env, model, data.usage);
+          text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+        }
+      }
+      // un <sortie> ouvert mais jamais fermé (troncature persistante) ne doit pas fuir à l'écran
+      if (!text.includes("</sortie>")) text = text.replace(/<sortie>[\s\S]*$/, "").trim();
       // extraction du signal de sortie éventuel
       let sortie = null, visible = text;
       const m = text.match(/<sortie>\s*([\s\S]*?)\s*<\/sortie>/);
