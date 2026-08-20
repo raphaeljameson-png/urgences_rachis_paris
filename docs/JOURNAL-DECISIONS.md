@@ -130,6 +130,24 @@ clé d'éval si RJ le souhaite.
 **Rappels urgents** : `ANTHROPIC_API_KEY` expire le **24/08/2026** ; clé
 d'évaluation à révoquer (point ouvert n° 5).
 
+### Séance du 20/08/2026 (suite) — refonte esthétique alignée sur la charte réelle de rachis.paris
+
+**Demande RJ** : « retravailler l'esthétique en reprenant les codes de rachis.paris ».
+Codes graphiques EXTRAITS du site réel (CSS inliné du thème Bridge, homepage du
+20/08) : fond `#f6f6f6` / sections blanches alternées · titres Montserrat `#303030`,
+h2 24 px MAJUSCULES letter-spacing 1 px graisse 600 + filet turquoise · corps
+Raleway gris `#818181` · accent dominant turquoise `#1abc9c` (hover `#149a80`) ·
+boutons `.qbutton` (2 px, majuscules 13 px 700, rayon 4 px, remplissage turquoise
+au survol) · marine `#003366` confirmé comme couleur SECONDAIRE (fonds de blocs).
+Constat : le marine n'est pas la dominante de rachis.paris — inversion opérée
+(turquoise dominant, marine secondaire : pied de page, bulles patient).
+
+**Maquette montrée et validée avant implémentation** (« Ok et merge ») :
+artifact « Maquette Urgence'Rachis ». Implémentation = remplacement du seul bloc
+`<style>` + lien Google Fonts (DM Mono retirée, absente de rachis.paris ;
+Montserrat 400 ajoutée). **Body vérifié byte-identique** : aucun texte patient,
+aucune ligne de JS, aucune règle d'orientation modifiés. `node --check` OK.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
