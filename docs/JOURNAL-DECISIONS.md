@@ -105,6 +105,31 @@
 
 **État de main** : worker blob a508d7f · front blob d97afad · v0.9 · 08/08/2026.
 
+### Séance du 20/08/2026 — audit complet + correctifs de robustesse (points 1, 3, 6)
+
+**Audit du code** (worker blob a508d7f, front blob d97afad) consigné dans
+`docs/PROPOSITIONS-AMELIORATIONS-2026-08-20.md`, poussé sur la branche
+`claude/urgences-rachis-improvement-be4eo3` — `main` intact, rien n'est déployé
+tant que RJ n'a pas mergé. RJ a validé les points **1, 3 et 6** (« OK pour 1 3 et 6 »
+— points 2, 4, 5 non retenus à ce stade, 8-9 en attente).
+
+| Décision | Contenu |
+|---|---|
+| **Garde troncature `<sortie>` (worker)** | Si `stop_reason === "max_tokens"` sans bloc `<sortie>` complet : un second essai unique avec plafond doublé (1 400 tokens) ; en dernier recours, un `<sortie>` ouvert jamais fermé est purgé du texte visible. La dépense des deux appels est comptée. Prompt système inchangé au caractère près. Prérequis n° 1 de la future migration Opus 5. |
+| **jsPDF auto-hébergé (front)** | `jspdf.umd.min.js` 2.5.1 servi depuis `/public` (SHA-512 vérifiée identique au SRI officiel cdnjs), plus aucun appel à cdnjs.cloudflare.com. En secours ultime, si la génération du PDF échoue, la demande de consultation part SANS le rapport joint plutôt que d'échouer (le worker accepte déjà `rapportB64` absent). Mentions légales : la mention du sous-traitant cdnjs devient obsolète — retrait à valider par RJ (non fait). |
+| **429 en cours de dialogue (front)** | Au lieu de l'impasse sèche, le patient voit la phrase courte « Le service est très sollicité aujourd'hui et ne peut pas terminer l'analyse. » (formulation proposée dans le document d'audit, couverte par le « OK » sur le point 6) suivie de la **carteBilan** existante (textes déjà validés). Limite connue : si l'IP a épuisé son quota, `/api/send` renverra aussi 429 — le repli mailto + PDF de la carte reste disponible. |
+| Version front | `VERSION_DATE` → 20/08/2026 (format « v0.9 · date » validé le 08/08). |
+
+**Vérifications** : `node --check` OK sur le worker, le script extrait du front et
+jsPDF ; asserts d'occurrences OK sur chaque diff. Rejeu du banc impossible depuis
+cette session (aucune clé API accessible, conformément aux règles) — mais ni le
+prompt ni aucune règle d'orientation ne sont modifiés : la garde ne s'active que
+sur troncature effective. Un rejeu de contrôle pourra être fait après pose d'une
+clé d'éval si RJ le souhaite.
+
+**Rappels urgents** : `ANTHROPIC_API_KEY` expire le **24/08/2026** ; clé
+d'évaluation à révoquer (point ouvert n° 5).
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
