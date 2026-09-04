@@ -193,6 +193,25 @@ Montserrat/Raleway), body vérifié identique à l'exception de `VERSION_DATE` �
 Nota : `public/mentions-legales.html` garde son propre style — harmonisation à
 prévoir si Stellar est conservé.
 
+### Séance du 04/09/2026 (suite) — clé réparée, Stellar en prod, chantiers a+b lancés
+
+**Clé API renouvelée par RJ** : `/api/chat` re-testé OK (question conforme,
+niveau collégien). Panne du 24/08 au 04/09 close.
+
+**Stellar mergé et vérifié servi en prod** (« OK stellar »). Harmonisation de
+`mentions-legales.html` au style Stellar : à faire si le style est conservé.
+
+**Chantiers validés par RJ (« A+B »)** :
+- **a. Passe de confirmation** : `eval/banc-confirmation.mjs` committé — rejoue
+  les 100 vignettes (référence vignettes.json + arbitrages-2) via `/api/eval`
+  en dialogue automatique triage/simulateur-patient, rapport JSON + score.
+  Attend que RJ pose les secrets `ANTHROPIC_EVAL_KEY` (clé dédiée plafonnée,
+  révocation en fin de campagne) et `EVAL_TOKEN` ; la clé API ne quitte jamais
+  Cloudflare (design A1 du 07/08).
+- **b. Traces réelles (option A)** : textes de transparence proposés à RJ
+  (sous-titre du chat, section Transparence, paragraphe mentions légales) —
+  `TRACE_ACTIVE` ne passera à true qu'après validation mot à mot.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
