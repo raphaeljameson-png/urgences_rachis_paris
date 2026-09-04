@@ -212,6 +212,34 @@ niveau collégien). Panne du 24/08 au 04/09 close.
   (sous-titre du chat, section Transparence, paragraphe mentions légales) —
   `TRACE_ACTIVE` ne passera à true qu'après validation mot à mot.
 
+### Séance du 05/09/2026 — REX de vie réelle n° 3 (myélopathie) + activation des traces
+
+**REX n° 3 (test RJ du 05/09 00h24)** : homme 36 ans, myélopathie
+cervico-arthrosique documentée (IRM < 3 mois, conclusion recopiée), maladresse
+bimanuelle, évolution LENTE voire en amélioration → l'IA a sorti 72h/myelopathie.
+Verdict RJ : « pourrait être vu sans difficulté dans les 15 jours — pas
+d'aggravation urgente ». Deux fautes : précédence non arbitrée entre les branches
+« documentée → 72h » et « lente → consult » ; « souffrance médullaire » inférée
+du seul compte rendu recopié, en violation de la règle conclusion_imagerie.
+
+**Patch validé mot à mot par RJ** — nouveau cluster myélopathie : la VITESSE
+commande Y COMPRIS quand c'est documenté. Rapide (semaine, chutes) → 24h ;
+aggravation à l'échelle de quelques semaines sur myélopathie documentée avec
+souffrance médullaire → 72h ; STABLE / AMÉLIORATION / aggravation LENTE (mois)
+→ consult motif candidat (10-15 j), même documentée à l'IRM ; Lhermitte isolé
+stable → consult ; un compte rendu rapporté mentionnant une myélopathie oriente
+les questions mais ne commande jamais un niveau à lui seul. Ce cas devient la
+sonde P5 ; contre-épreuve P6 (aggravation rapide → 24h) à rejouer.
+
+**Traces option A ACTIVÉES (TRACE_ACTIVE=true)** — textes validés par RJ :
+sous-titre du chat « Anonyme · Aucune donnée nominative · Ne remplace pas un
+avis médical », phrase de la section Transparence (déroulé anonyme, 12 mois
+max, ni identité ni IP ni texte libre), paragraphe 4.2 des mentions légales.
+Restent à harmoniser si RJ le souhaite : la phrase 4.1 « restent dans la mémoire
+temporaire », la constante NOTE des cartes et la pastille « Aucun stockage »
+(formulations antérieures aux traces, désormais partiellement imprécises).
+Version front : v0.9 · 05/09/2026.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.

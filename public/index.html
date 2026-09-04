@@ -338,7 +338,7 @@ footer a{color:#5ad0b6}
       <span class="dot"></span>
       <div>
         <div class="t">Assistant d'orientation</div>
-        <div class="s">Anonyme · Mémoire temporaire uniquement · Ne remplace pas un avis médical · <span class="ver"></span></div>
+        <div class="s">Anonyme · Aucune donnée nominative · Ne remplace pas un avis médical · <span class="ver"></span></div>
       </div>
     </div>
     <div class="chat-body" id="chat"></div>
@@ -431,7 +431,7 @@ footer a{color:#5ad0b6}
       </div>
       <div>
         <h3>Aucune donnée nominative enregistrée</h3>
-        <p>Vos réponses restent dans la <strong>mémoire temporaire de votre navigateur</strong> et sont effacées à la fermeture de la page. Le rapport PDF est généré <strong>localement, sur votre appareil</strong>. Des statistiques d'usage <strong>anonymes et agrégées</strong> sont mesurées pour améliorer le service&nbsp;; elles ne contiennent ni votre identité, ni vos réponses, ni votre adresse IP.</p>
+        <p>Vos réponses restent dans la <strong>mémoire temporaire de votre navigateur</strong> et sont effacées à la fermeture de la page. Le rapport PDF est généré <strong>localement, sur votre appareil</strong>. Pour améliorer le service, des statistiques anonymes et le déroulé anonyme des évaluations — réponses aux questions à choix, questions posées par l'assistant, orientation proposée — sont conservés pendant <strong>12 mois au maximum</strong>&nbsp;; ils ne contiennent ni votre identité, ni votre adresse IP, ni le texte libre que vous saisissez.</p>
         <span class="pill">Anonyme</span><span class="pill">Sans inscription</span><span class="pill">Aucun stockage</span><span class="pill">PDF généré localement</span>
       </div>
     </div>
@@ -450,7 +450,7 @@ footer a{color:#5ad0b6}
 /* ============ CONFIGURATION ============ */
 const NL = String.fromCharCode(10);
 const VERSION = "0.9";
-const VERSION_DATE = "04/09/2026";
+const VERSION_DATE = "05/09/2026";
 const VERSION_TAG = "v" + VERSION + " \u00b7 " + VERSION_DATE;
 const CONTACT_EMAIL = "urgences@rachis.paris";
 const SITE = "https://rachis.paris";
@@ -675,8 +675,8 @@ function carteSuivi(){
    <p class="note">Si de nouveaux signes apparaissent (perte de force, troubles urinaires, fièvre, douleur brutale après un choc), reprenez cette évaluation ou appelez le 15.</p>`,
   [{href:SITE,label:"Continuer sur rachis.paris"},{pdf:true,label:"📄 Télécharger le PDF"}]);
 }
-/* ---- Option A : trace technique anonyme (améliorer l'organigramme) — DÉSACTIVÉE en attente de la mention de transparence validée ---- */
-const TRACE_ACTIVE=false;
+/* ---- Option A : trace technique anonyme (améliorer l'organigramme) — activée le 05/09/2026, mentions de transparence validées par RJ ---- */
+const TRACE_ACTIVE=true;
 function sendTrace(niveau,motif){
   if(!TRACE_ACTIVE) return;
   try{
