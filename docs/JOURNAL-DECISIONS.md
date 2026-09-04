@@ -240,6 +240,23 @@ temporaire », la constante NOTE des cartes et la pastille « Aucun stockage »
 (formulations antérieures aux traces, désormais partiellement imprécises).
 Version front : v0.9 · 05/09/2026.
 
+### Séance du 05/09/2026 (suite) — passe de confirmation : 97/100
+
+**REX n° 3 vérifié en prod** : sondes P5 (cas RJ → consult/candidat) et P6
+(aggravation rapide → 24h) concordantes après déploiement du patch.
+
+**Passe de confirmation exécutée** (banc eval/banc-confirmation.mjs, jeton posé
+par RJ, clé d'éval dédiée) : **97/100 sur le prompt exact de prod** (3d87dc5),
+coût 8,04 $. Sécurité : « 15 » 11/11, aucun manqué critique. Première référence
+chiffrée sur un prompt unique — remplace le « 100/100 cumulé » d'août.
+Analyse des 3 écarts (tous d'un cran, frontières connues) et micro-questions :
+eval/RESULTATS-CONFIRMATION-2026-09-05.md. En résumé : v19 (frontière « 1 mois »
+de la radiculalgie), v22 (chutes sans aggravation rapide : 24h ou 72h ? — effet
+de bord du patch REX n° 3, recoupe le point ouvert myélopathie), v57 (le verrou
+REX-008 « début BRUTAL » n'a pas retenu « inhabituelle » chez l'ostéoporotique
+connu). **Micro-arbitrages soumis à RJ** ; clé d'éval conservée le temps des
+arbitrages, puis à révoquer.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
