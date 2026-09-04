@@ -173,6 +173,26 @@ d'orientation ni prompt modifiés.
 carte dans les deux états ; contre-épreuve radios récentes → textes non imagé,
 comme voulu).
 
+### Séance du 04/09/2026 — bascule esthétique « Stellar » + clé API expirée
+
+**Constat** : `ANTHROPIC_API_KEY` a expiré le 24/08 sans renouvellement — vérifié
+en prod le 04/09 : `/api/chat` → 502 « service indisponible ». **Le triage IA est
+hors service** (le parcours déterministe et les courts-circuits de sécurité
+fonctionnent toujours). Action RJ : nouvelle clé console Anthropic → secret
+Cloudflare. La clé d'évaluation reste à révoquer.
+
+**Bascule Stellar validée par RJ (« J'aime bien stellar »)** : maquette artifact
+« Maquette Stellar » du 20/08 (style HTML5UP Stellar transposé aux couleurs de la
+marque — dégradé 45° turquoise→marine, Source Sans Pro 300, filet tricolore,
+héros centré, carte chat en chevauchement ; illustration colonne vertébrale
+masquée par CSS, réintégrable). Aucun fichier HTML5UP copié — inspiration de
+style uniquement, pas d'obligation d'attribution. Implémentation : remplacement
+du bloc `<style>` + lien Google Fonts (Source Sans Pro remplace
+Montserrat/Raleway), body vérifié identique à l'exception de `VERSION_DATE` →
+04/09/2026. `node --check` OK ; jspdf local et correctif `dejaImage` intacts.
+Nota : `public/mentions-legales.html` garde son propre style — harmonisation à
+prévoir si Stellar est conservé.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
