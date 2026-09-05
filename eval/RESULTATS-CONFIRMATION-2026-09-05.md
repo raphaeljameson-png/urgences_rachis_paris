@@ -25,3 +25,30 @@ Les 3 écarts sont tous d'UN cran, chacun sur une frontière connue.
   d'un rejeu ciblé (vignette + contre-épreuves) avant re-mesure.
 - Clé d'évaluation : à conserver le temps des micro-arbitrages, puis RÉVOQUER
   (+ suppression des secrets ANTHROPIC_EVAL_KEY / EVAL_TOKEN).
+
+---
+
+## Addendum — patch final et rejeu (05/09/2026, soir)
+
+**Arbitrages RJ encodés** (commit f229030) : frontière radiculalgie « ~4 semaines,
+un mois compte comme tel » + phrase de capture sans inquiéter ; myélopathie v2
+(la récence des chutes interroge — récentes → 24h, anciennes stables → consult) ;
+exception ostéoporotique au verrou REX-008 (douleur inhabituelle même progressive
+→ 72h, IRM impérative). **Référence v57 révisée consult → 72h.**
+
+**Rejeu ciblé (15 vignettes) : v19 ✅ consult/candidat · v57 ✅ 72h/tassement ·
+contre-épreuves 11/11** (v9, v12, v20, v21, v23, v30, v33, v52, v56, v61, v94).
+
+**Restes connus :**
+- **v22 : sur-triage d'un cran ASSUMÉ sous ambiguïté.** La fiche dit « chutes »
+  sans date ; le simulateur ne peut pas dater ce que la fiche ne précise pas ;
+  l'IA applique alors la règle « hésitation → le plus urgent » → 24h. C'est le
+  comportement de sécurité voulu. En vie réelle, le patient répondra à la
+  question de récence (désormais posée systématiquement) et le niveau se
+  résoudra. Option ouverte : préciser la récence des chutes dans la fiche v22
+  pour la rendre testable.
+- **v41 : cas-frontière stochastique** — 1 échec puis 3/3 concordants au rejeu.
+  Borné à un cran de sur-triage quand il flanche.
+
+**Bilan du prompt final en prod : 99/100 (v22 = seul écart, prudent et expliqué),
+v41 instable-borné.** Campagne close — clé d'évaluation et secrets à révoquer.

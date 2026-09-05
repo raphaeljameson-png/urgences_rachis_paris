@@ -257,6 +257,31 @@ REX-008 « début BRUTAL » n'a pas retenu « inhabituelle » chez l'ostéoporot
 connu). **Micro-arbitrages soumis à RJ** ; clé d'éval conservée le temps des
 arbitrages, puis à révoquer.
 
+### Séance du 05/09/2026 (soir) — patch final, rejeu, clôture de campagne
+
+**Arbitrages RJ (« OK patch final »)** : v19 → frontière radiculalgie ~4 sem
+(« un mois compte comme tel ») + capture « accueilli en consultation programmée,
+sans être inquiété » ; v22 → la RÉCENCE des chutes commande (récentes → 24h,
+anciennes stables → consult, entre-deux documenté aggravant → 72h) ; v57 →
+exception ostéoporotique au verrou REX-008 (fracture possible sans début brutal :
+douleur inhabituelle même progressive → 72h, IRM impérative — « c'est l'IRM qui
+signe le tassement ») + RÉFÉRENCE v57 RÉVISÉE consult → 72h. Principe directeur
+verbalisé par RJ : capter les candidats chirurgicaux sans inquiéter les autres.
+
+**Rejeu (15 vignettes, 1,2 $)** : v19 ✅, v57 ✅, contre-épreuves 11/11.
+v22 = sur-triage d'un cran assumé sous ambiguïté (fiche sans date de chutes →
+règle « hésitation → le plus urgent ») ; v41 = frontière stochastique (3/3 après
+1 échec). **Prompt final en prod : 99/100.** Détail : addendum de
+eval/RESULTATS-CONFIRMATION-2026-09-05.md. **Campagne close → révoquer la clé
+d'éval + supprimer les secrets ANTHROPIC_EVAL_KEY et EVAL_TOKEN.**
+
+**Demandes RJ à instruire** : (1) campagne multi-praticiens (classeurs
+d'annotation à préparer) ; (2) numérotation anonyme des évaluations, reportée
+sur le PDF + la trace + l'email (feu vert donné ? textes de transparence à
+soumettre) ; (3) stockage des conversations complètes : DÉCONSEILLÉ en l'état
+(promesse « ni texte libre » publiée + données potentiellement identifiantes →
+dossier HDS dormant) — alternative retenue à discuter : numérotation + email.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
