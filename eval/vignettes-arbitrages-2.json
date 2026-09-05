@@ -2,17 +2,56 @@
   "meta": {
     "objet": "Révisions de la référence du banc — arbitrages RJ du 07/08/2026 (après-midi + soir, post passes n°1 et 2). Fusionner sur eval/vignettes.json (les champs listés remplacent ceux de la vignette).",
     "regle_de_fusion": "attendu remplacé ; attendu_source devient arbitrage_2026-08-07_p2 ; note ajoutée.",
-    "repartition_attendue_apres_fusion": { "mt": 43, "consult": 19, "72h": 20, "15": 11, "urgences": 3, "24h": 1, "suivi": 3 }
+    "repartition_attendue_apres_fusion": {
+      "mt": 43,
+      "consult": 18,
+      "72h": 21,
+      "15": 11,
+      "urgences": 3,
+      "24h": 1,
+      "suivi": 3
+    }
   },
   "revisions": {
-    "11": { "attendu": "72h", "raison": "Parésie partielle récente harmonisée à 48-72 h (réalisme des rendez-vous, décision RJ : « 48h est un bon équilibre », option A tous membres)." },
-    "34": { "attendu": "72h", "raison": "Hyperalgie radiculaire résistante sans imagerie → 72h, IRM organisée en urgence dans le délai." },
-    "35": { "attendu": "72h", "raison": "Parésie partielle récente (membre inférieur) → 72h, option A validée par RJ." },
-    "47": { "attendu": "72h", "raison": "Hyperalgie radiculaire résistante (cruralgie sous morphine) → 72h." },
-    "49": { "attendu": "72h", "raison": "Parésie partielle récente (genou qui se dérobe) → 72h, option A." },
-    "52": { "attendu": "72h", "raison": "Tassement documenté hyperalgique → 72h (REX-007, option A : plus aucun délai intenable promis)." },
-    "82": { "attendu": "72h", "raison": "Parésie partielle après geste (infiltration) → 72h ; le commentaire RJ de juillet disait déjà 48-72 h." },
-    "75": { "attendu": "suivi", "raison": "Scoliose = lésion structurale documentée stable → niveau suivi (consultation bienvenue sans aucune urgence, bilan prescrit idéalement par le MT d'abord)." },
-    "86": { "attendu": "15", "raison": "Micro-arbitrage RJ 07/08 soir (option A) : douleur thoracique brutale + symptôme cardio-respiratoire associé → 15 (régulation) ; sur-triage assumé sur les tableaux vitaux." }
+    "11": {
+      "attendu": "72h",
+      "raison": "Parésie partielle récente harmonisée à 48-72 h (réalisme des rendez-vous, décision RJ : « 48h est un bon équilibre », option A tous membres)."
+    },
+    "34": {
+      "attendu": "72h",
+      "raison": "Hyperalgie radiculaire résistante sans imagerie → 72h, IRM organisée en urgence dans le délai."
+    },
+    "35": {
+      "attendu": "72h",
+      "raison": "Parésie partielle récente (membre inférieur) → 72h, option A validée par RJ."
+    },
+    "47": {
+      "attendu": "72h",
+      "raison": "Hyperalgie radiculaire résistante (cruralgie sous morphine) → 72h."
+    },
+    "49": {
+      "attendu": "72h",
+      "raison": "Parésie partielle récente (genou qui se dérobe) → 72h, option A."
+    },
+    "52": {
+      "attendu": "72h",
+      "raison": "Tassement documenté hyperalgique → 72h (REX-007, option A : plus aucun délai intenable promis)."
+    },
+    "82": {
+      "attendu": "72h",
+      "raison": "Parésie partielle après geste (infiltration) → 72h ; le commentaire RJ de juillet disait déjà 48-72 h."
+    },
+    "75": {
+      "attendu": "suivi",
+      "raison": "Scoliose = lésion structurale documentée stable → niveau suivi (consultation bienvenue sans aucune urgence, bilan prescrit idéalement par le MT d'abord)."
+    },
+    "86": {
+      "attendu": "15",
+      "raison": "Micro-arbitrage RJ 07/08 soir (option A) : douleur thoracique brutale + symptôme cardio-respiratoire associé → 15 (régulation) ; sur-triage assumé sur les tableaux vitaux."
+    },
+    "57": {
+      "attendu": "72h",
+      "raison": "Arbitrage RJ 05/09 : chez l'ostéoporotique aux tassements connus, douleur inhabituelle même d'installation progressive → 72h avec IRM impérative (c'est l'IRM qui signe le tassement). Référence révisée consult → 72h."
+    }
   }
 }
