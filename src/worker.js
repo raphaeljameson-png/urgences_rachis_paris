@@ -109,6 +109,55 @@ async function hashIp(ip) {
   return [...new Uint8Array(buf)].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+/* Lot 2 — pré-consultation par lien : praticiens autorisés (le serveur fait foi,
+   jamais le client) */
+const PRATICIENS = { jameson: "Dr Jameson", lamerain: "Dr Lamerain", travert: "Dr Travert" };
+const LIEN_TTL_JOURS = 45;
+
+/* Référence anonyme d'évaluation générée par le front : UR- + 6 caractères non ambigus */
+const REF_RE = /^UR-[ACDEFHJKLMNPRTUVWXY34679]{6}$/;
+
+async function hmacHex(secret, msg) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(msg));
+  return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* Turnstile (anti-robot Cloudflare) — ACTIF seulement si le secret TURNSTILE_SECRET
+   est posé (même principe que /api/eval : supprimer le secret désactive tout).
+   Un jeton Turnstile est à usage unique ; pour ne pas re-vérifier à chaque tour de
+   conversation, le worker délivre après vérification un laissez-passer signé (HMAC)
+   valable 2 h, que le front renvoie ensuite. */
+async function turnstileVerifie(env, token, ip) {
+  const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ secret: env.TURNSTILE_SECRET, response: String(token || ""), remoteip: ip }),
+  });
+  const d = await r.json().catch(() => ({}));
+  return d.success === true;
+}
+async function nouveauPass(env) {
+  const t = Date.now().toString(36);
+  return t + "." + await hmacHex(env.TURNSTILE_SECRET, "pass:" + t);
+}
+async function passValide(env, pass) {
+  if (typeof pass !== "string") return false;
+  const [t, sig] = pass.split(".");
+  if (!t || !sig) return false;
+  if (Date.now() - parseInt(t, 36) > 2 * 3600 * 1000) return false;
+  return sig === await hmacHex(env.TURNSTILE_SECRET, "pass:" + t);
+}
+/* Contrôle commun /api/chat + /api/send : renvoie {ok, pass?} — pass à renvoyer au
+   front quand un jeton Turnstile vient d'être vérifié. Sans secret posé : transparent. */
+async function controleHumain(env, body, ip) {
+  if (!env.TURNSTILE_SECRET) return { ok: true };
+  if (await passValide(env, body.pass)) return { ok: true };
+  if (body.ts && await turnstileVerifie(env, body.ts, ip)) return { ok: true, pass: await nouveauPass(env) };
+  return { ok: false };
+}
+
 const STAT_EVENTS = new Set(["start","region_cervical","region_lombaire","ia_start",
   "sortie_15","sortie_urgences","sortie_24h","sortie_72h","sortie_consult","sortie_mt","sortie_suivi","sortie_bilan",
   "pdf","envoi","envoi_site"]);
@@ -211,6 +260,56 @@ export default {
       return Response.json(parisNow());
     }
 
+    // Configuration publique du front (clé de site Turnstile si activée — la clé
+    // de site est publique par nature, seul TURNSTILE_SECRET est confidentiel)
+    if (url.pathname === "/api/config") {
+      return Response.json({ turnstile: env.TURNSTILE_SITE_KEY || null });
+    }
+
+    // LOT 1 — relecture des traces anonymes (page secrétariat/praticien).
+    // Mort par défaut : 404 tant que le secret ADMIN_KEY n'est pas posé.
+    if (url.pathname === "/api/relecture") {
+      if (!env.ADMIN_KEY || (request.headers.get("Authorization") || "") !== "Bearer " + env.ADMIN_KEY) {
+        return new Response("Not found", { status: 404 });
+      }
+      const mois = /^\d{4}-\d{2}$/.test(url.searchParams.get("mois") || "")
+        ? url.searchParams.get("mois") : new Date().toISOString().slice(0, 7);
+      const liste = await env.URGENCE_KV.list({ prefix: `trace:${mois}:`, limit: 1000 });
+      const traces = [];
+      for (const k of liste.keys) {
+        const v = await env.URGENCE_KV.get(k.name);
+        if (v) { try { traces.push(JSON.parse(v)); } catch (e) {} }
+      }
+      traces.sort((a, b) => String(b.t).localeCompare(String(a.t)));
+      return Response.json({ mois, nb: traces.length, traces });
+    }
+
+    // LOT 2 — génération d'un lien de pré-consultation (protégé par ADMIN_KEY)
+    if (url.pathname === "/api/lien" && request.method === "POST") {
+      if (!env.ADMIN_KEY || (request.headers.get("Authorization") || "") !== "Bearer " + env.ADMIN_KEY) {
+        return new Response("Not found", { status: 404 });
+      }
+      let b;
+      try { b = await request.json(); } catch { return Response.json({ error: "corps invalide" }, { status: 400 }); }
+      if (!PRATICIENS[b.praticien]) return Response.json({ error: "praticien inconnu" }, { status: 400 });
+      const token = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
+      const expire = new Date(Date.now() + LIEN_TTL_JOURS * 86400000).toISOString().slice(0, 10);
+      await env.URGENCE_KV.put(`plien:${token}`,
+        JSON.stringify({ praticien: b.praticien, cree: new Date().toISOString().slice(0, 10), expire }),
+        { expirationTtl: LIEN_TTL_JOURS * 86400 });
+      return Response.json({ url: `${url.origin}/?p=${token}`, praticien: PRATICIENS[b.praticien], expire });
+    }
+
+    // LOT 2 — validation publique d'un lien de pré-consultation
+    if (url.pathname.startsWith("/api/plien/")) {
+      const token = url.pathname.slice("/api/plien/".length);
+      if (!/^[0-9a-f]{20}$/.test(token)) return Response.json({ error: "invalide" }, { status: 404 });
+      const v = await env.URGENCE_KV.get(`plien:${token}`);
+      if (!v) return Response.json({ error: "invalide" }, { status: 404 });
+      const d = JSON.parse(v);
+      return Response.json({ praticien: PRATICIENS[d.praticien] || d.praticien, expire: d.expire });
+    }
+
     // Statistiques anonymes agrégées : simples compteurs mensuels, aucune donnée individuelle
     if (url.pathname === "/api/stat" && request.method === "POST") {
       try {
@@ -258,6 +357,8 @@ export default {
           nb_messages: Number.isInteger(b.nb_messages) ? Math.min(b.nb_messages, 40) : null,
           questions_ia: Array.isArray(b.questions_ia) ? b.questions_ia.slice(0, 15).map(q => pick(q, 300)) : [],
           niveau: pick(b.niveau, 10), motif: pick(b.motif, 25),
+          ref: REF_RE.test(String(b.ref || "")) ? b.ref : null,
+          preconsult: typeof b.preconsult === "string" ? b.preconsult.slice(0, 20) : null,
         };
         const key = `trace:${new Date().toISOString().slice(0, 7)}:${crypto.randomUUID()}`;
         await env.URGENCE_KV.put(key, JSON.stringify(trace), { expirationTtl: 31536000 });
@@ -274,10 +375,19 @@ export default {
       }
       let b;
       try { b = await request.json(); } catch { return Response.json({ error: "corps invalide" }, { status: 400 }); }
+      const humainSend = await controleHumain(env, b, ip);
+      if (!humainSend.ok) return Response.json({ error: "verification" }, { status: 403 });
       const s = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
       const nom = s(b.nom, 80), prenom = s(b.prenom, 80), ddn = s(b.ddn, 20);
       const tel = s(b.tel, 30), email = s(b.email, 120), msg = s(b.message, 3000);
       const orient = s(b.orientation, 140), synth = s(b.synthese, 700);
+      const ref = REF_RE.test(String(b.ref || "")) ? b.ref : "";
+      // pré-consultation : le praticien est résolu CÔTÉ SERVEUR à partir du jeton
+      let praticien = "";
+      if (typeof b.ptoken === "string" && /^[0-9a-f]{20}$/.test(b.ptoken)) {
+        const pv = await env.URGENCE_KV.get(`plien:${b.ptoken}`);
+        if (pv) { try { praticien = PRATICIENS[JSON.parse(pv).praticien] || ""; } catch (e) {} }
+      }
       if (!nom || !prenom || !ddn || !tel || !email || b.consent !== true) {
         return Response.json({ error: "champs" }, { status: 400 });
       }
@@ -306,7 +416,9 @@ export default {
         }
       }
       const text =
+        (praticien ? "PRÉ-CONSULTATION — dossier préparé pour " + praticien + ".\n\n" : "") +
         "Nouvelle demande de consultation reçue via Urgence'Rachis.\n\n" +
+        (ref ? "Référence d'évaluation : " + ref + "\n\n" : "") +
         "PATIENT\n" +
         "Nom : " + nom.toUpperCase() + "\n" +
         "Prénom : " + prenom + "\n" +
@@ -320,7 +432,8 @@ export default {
         "Répondre à cet email écrit directement au patient (Reply-To).";
       try {
         await gmailSend(env, {
-          subject: "Demande de consultation — " + nom.toUpperCase() + " " + prenom + (orient ? " — " + orient : ""),
+          subject: (praticien ? "Pré-consultation " + praticien + " — " : "Demande de consultation — ")
+            + nom.toUpperCase() + " " + prenom + (ref ? " [" + ref + "]" : "") + (orient ? " — " + orient : ""),
           text,
           replyTo: email,
           attachments: atts,
@@ -414,6 +527,8 @@ export default {
       }
       let body;
       try { body = await request.json(); } catch { return Response.json({ error: "corps invalide" }, { status: 400 }); }
+      const humain = await controleHumain(env, body, ip);
+      if (!humain.ok) return Response.json({ error: "verification" }, { status: 403 });
       const messages = Array.isArray(body.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
       if (!messages.length || messages.length > MAX_MESSAGES) {
         return Response.json({ error: "conversation invalide" }, { status: 400 });
@@ -473,7 +588,7 @@ export default {
         try { sortie = JSON.parse(m[1]); } catch { sortie = null; }
         visible = text.replace(/<sortie>[\s\S]*<\/sortie>/, "").trim();
       }
-      return Response.json({ reply: visible, sortie });
+      return Response.json({ reply: visible, sortie, ...(humain.pass ? { pass: humain.pass } : {}) });
     }
 
     // tout le reste : fichiers statiques

@@ -461,7 +461,47 @@ const ANOTER = "<p><strong>À noter</strong>&nbsp;: la consultation avec un chir
 
 /* ============ MÉMOIRE TEMPORAIRE (navigateur uniquement) ============ */
 let S = {};
-function resetState(){ S={region:null,sexe:null,age:null,lateralite:null,irradiation:null,anciennete:null,evolution:null,imagerie:null,imagerieRecente:null,conclusionImagerie:"",souhait:null,signes:[],description:"",messages:[],synthese:"",orientation:null,detail:""}; }
+/* Référence anonyme d'évaluation (lot 1) : reportée sur le PDF, la trace et
+   l'email du secrétariat — permet de relier un dossier envoyé à son parcours. */
+function genRef(){const A="ACDEFHJKLMNPRTUVWXY34679";let r="";const b=new Uint8Array(6);crypto.getRandomValues(b);for(const x of b)r+=A[x%A.length];return "UR-"+r;}
+function resetState(){ S={ref:genRef(),region:null,sexe:null,age:null,lateralite:null,irradiation:null,anciennete:null,evolution:null,imagerie:null,imagerieRecente:null,conclusionImagerie:"",souhait:null,signes:[],description:"",messages:[],synthese:"",orientation:null,detail:""}; }
+
+/* ============ LOT 2 — PRÉ-CONSULTATION PAR LIEN (?p=jeton) ============ */
+let PRE=null; /* {token, praticien} — survit au bouton Recommencer */
+async function initPre(){
+  const p=new URLSearchParams(location.search).get("p");
+  if(!p) return;
+  if(!/^[0-9a-f]{20}$/.test(p)){bot("Ce lien de pré-consultation n'est plus valide (il a peut-être expiré). Vous pouvez tout de même réaliser l'évaluation librement, ou contacter le secrétariat.");return;}
+  try{
+    const r=await fetch("/api/plien/"+p);
+    if(r.ok){const d=await r.json();PRE={token:p,praticien:d.praticien};}
+    else bot("Ce lien de pré-consultation n'est plus valide (il a peut-être expiré). Vous pouvez tout de même réaliser l'évaluation librement, ou contacter le secrétariat.");
+  }catch(e){}
+}
+
+/* ============ TURNSTILE (anti-robot Cloudflare) — actif si la clé de site est posée ============ */
+let TS_SITEKEY=null,TS_PASS=null;
+async function chargerConfig(){
+  try{const r=await fetch("/api/config");if(r.ok)TS_SITEKEY=(await r.json()).turnstile;}catch(e){}
+  if(TS_SITEKEY){const s=document.createElement("script");s.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";s.async=true;document.head.appendChild(s);}
+}
+function tsToken(){
+  return new Promise(res=>{
+    if(!TS_SITEKEY||!window.turnstile) return res(null);
+    let fini=false,wid=null;
+    const d=document.createElement("div");d.style.display="none";document.body.appendChild(d);
+    const fin=t=>{if(fini)return;fini=true;res(t);setTimeout(()=>{try{if(wid!==null)window.turnstile.remove(wid);}catch(e){}d.remove();},0);};
+    setTimeout(()=>fin(null),8000);
+    try{wid=window.turnstile.render(d,{sitekey:TS_SITEKEY,size:"invisible",callback:fin,"error-callback":()=>fin(null),"expired-callback":()=>fin(null)});}
+    catch(e){fin(null);}
+  });
+}
+/* Complète un corps de requête avec le laissez-passer ou un jeton frais */
+async function avecHumain(corps){
+  if(TS_PASS)corps.pass=TS_PASS;
+  else{const t=await tsToken();if(t)corps.ts=t;}
+  return corps;
+}
 
 /* ============ STATISTIQUES ANONYMES AGRÉGÉES ============ */
 function stat(ev){ try{ fetch("/api/stat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({event:ev})}); }catch(e){} }
@@ -570,6 +610,18 @@ function exitCard(cls,title,body,ctas){
     else{el=document.createElement("a");el.className="cta";el.href=c.href;el.rel="noopener";el.textContent=c.label;}
     d.appendChild(el);
   });
+  /* Pré-consultation : invitation à transmettre le dossier sur toutes les cartes
+     sauf les urgences vitales (n1 : appel du 15 / urgences d'abord) */
+  if(PRE&&cls!=="n1"){
+    const t=document.createElement("p");t.className="deux-options";
+    t.innerHTML="<strong>Pré-consultation "+PRE.praticien+"</strong>&nbsp;: transmettez votre dossier au secrétariat pour préparer votre rendez-vous.";
+    d.appendChild(t);
+    if(!(ctas||[]).some(c=>c.form)){
+      const b=document.createElement("button");b.className="cta";b.onclick=openSendForm;
+      b.textContent="📤 Transmettre mon dossier au secrétariat";
+      d.appendChild(b);
+    }
+  }
   chat.appendChild(d);
   const r=document.createElement("button");r.className="restart";r.textContent="↻ Recommencer l'évaluation";
   r.onclick=()=>{chat.innerHTML="";suiviActif=false;start();};
@@ -686,7 +738,8 @@ function sendTrace(niveau,motif){
       region:S.region,sexe:S.sexe,tranche_age:isNaN(age)?null:Math.floor(age/10)*10,
       irradiation:S.irradiation,anciennete:S.anciennete,evolution:S.evolution,
       imagerie:S.imagerie,souhait:S.souhait,signes:S.signes,
-      nb_messages:S.messages.length,questions_ia:questionsIA,niveau,motif})});
+      nb_messages:S.messages.length,questions_ia:questionsIA,niveau,motif,
+      ref:S.ref,preconsult:PRE?PRE.token:null})});
   }catch(e){}
 }
 function carteParNiveau(sortie){
@@ -706,6 +759,7 @@ function carteParNiveau(sortie){
 function start(){
   resetState();histo=[];stat("start");
   bot(`Bonjour, je suis l'assistant d'orientation de l'<strong>Espace Francilien du Rachis</strong>. Quelques questions rapides, puis vous décrirez librement vos symptômes&nbsp;: j'évaluerai le degré d'urgence et vous proposerai le bon circuit. Vos réponses restent dans votre navigateur et ne sont pas conservées. En cas de détresse immédiate, appelez le&nbsp;15.`);
+  if(PRE) bot(`Ce lien de <strong>pré-consultation</strong> vous a été transmis pour préparer votre consultation avec le <strong>${PRE.praticien}</strong> à l'Espace Francilien du Rachis. Répondez aux questions comme d'habitude&nbsp;: à la fin, vous pourrez transmettre votre dossier au secrétariat pour que votre rendez-vous soit préparé au mieux.`);
   setTimeout(qRegion,420);
 }
 function qRegion(){
@@ -928,11 +982,13 @@ async function callIA(){
   typing(true);
   try{
     const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({messages:S.messages,dossier:dossier()})});
+      body:JSON.stringify(await avecHumain({messages:S.messages,dossier:dossier()}))});
     typing(false);
     if(r.status===429){removeBar();bot("Le service est très sollicité aujourd'hui et ne peut pas terminer l'analyse.");carteBilan();return;}
+    if(r.status===403){bot("La vérification de sécurité n'a pas abouti. Rechargez la page et réessayez.");showBar();return;}
     if(!r.ok) throw new Error("api");
     const data=await r.json();
+    if(data.pass)TS_PASS=data.pass;
     if(data.reply){S.messages.push({role:"assistant",content:data.reply+(data.sortie?(NL+"<sortie>"+JSON.stringify(data.sortie)+"</sortie>"):"")});bot(escapeHtml(data.reply));}
     if(data.sortie){removeBar();carteParNiveau(data.sortie);}
     else if(S.messages.length>=28){removeBar();carteBilan();}
@@ -1054,15 +1110,18 @@ async function submitForm(){
     let rapportB64=null;
     try{rapportB64=buildPDF().output("datauristring").split(",")[1];}catch(e){}
     const r=await fetch("/api/send",{method:"POST",headers:{"content-type":"application/json"},
-      body:JSON.stringify({nom,prenom,ddn,tel,email,message:g("feMsg").value.trim(),consent:true,
-        orientation:S.orientation||"",synthese:S.synthese||"",attachments:atts,rapportB64})});
+      body:JSON.stringify(await avecHumain({nom,prenom,ddn,tel,email,message:g("feMsg").value.trim(),consent:true,
+        orientation:S.orientation||"",synthese:S.synthese||"",attachments:atts,rapportB64,
+        ref:S.ref,ptoken:PRE?PRE.token:null}))});
+    if(r.status===403) throw {verif:true};
     if(!r.ok){const d=await r.json().catch(()=>({}));throw (d&&d.error==="taille")?{taille:true}:new Error("api");}
     stat("envoi_site");
     g("formEnvoi").remove();
     bot(`✅ Votre demande a bien été envoyée au secrétariat. Vous serez recontacté(e) par téléphone ou par email pour fixer la consultation. Si votre état s'aggrave d'ici là — fièvre, perte de force, troubles urinaires, paralysie — appelez le 15 sans attendre.`);
   }catch(e){
     btn.disabled=false;btn.textContent="Envoyer ma demande de consultation";
-    if(e&&e.taille) err("Les pièces jointes dépassent 15\u00a0Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
+    if(e&&e.verif) err("La vérification de sécurité n'a pas abouti. Rechargez la page et réessayez.");
+    else if(e&&e.taille) err("Les pièces jointes dépassent 15\u00a0Mo au total : retirez-en, ou envoyez les documents volumineux vous-même par email.");
     else err("L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez. Vous pouvez aussi télécharger votre PDF et l'envoyer vous-même à "+CONTACT_EMAIL+".");
   }
 }
@@ -1086,7 +1145,8 @@ function buildPDF(){
   doc.text("Espace Francilien du Rachis · Version d'essai · Document généré localement par le patient",M,18);
   y=36;
   const now=new Date();
-  line("Généré le "+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" à "+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · Urgence'Rachis "+VERSION_TAG,{size:9,color:[100,116,139],gap:4});
+  line("Généré le "+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" à "+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+" · Urgence'Rachis "+VERSION_TAG+" · Référence d'évaluation : "+(S.ref||"—"),{size:9,color:[100,116,139],gap:4});
+  if(PRE) line("Pré-consultation préparée pour "+PRE.praticien,{bold:true,size:10,color:[0,51,102],gap:2});
   line("ORIENTATION PROPOSÉE",{bold:true,size:11,color:[0,51,102]});
   line(S.orientation||"—",{bold:true,size:12,color:[229,72,77],gap:1});
   if(S.synthese) line("Synthèse de l'assistant : "+S.synthese,{size:10,gap:4}); else y+=4;
@@ -1111,7 +1171,7 @@ function makePDF(){stat("pdf");buildPDF().save("urgence-rachis-rapport.pdf");}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vu");io.unobserve(e.target);}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
 document.querySelectorAll(".ver").forEach(el=>el.textContent=VERSION_TAG);
-start();
+(async()=>{await chargerConfig();await initPre();start();})();
 </script>
 </body>
 </html>

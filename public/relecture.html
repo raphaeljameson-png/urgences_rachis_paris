@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Urgence'Rachis — Relecture (praticiens)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+/* Page interne praticiens/secrétariat — style aligné sur la charte Stellar du site */
+:root{
+  --marine:#003366; --turquoise:#1abc9c; --turquoise-dark:#149a80; --turquoise-pale:#e8f8f4;
+  --encre:#3d3d3d; --texte:#636363; --gris-clair:#9d9d9d; --ligne:#dddddd; --fond:#f7f7f7;
+  --rose:#e5484d; --rose-pale:#fdecec; --ambre:#f59e0b; --ambre-pale:#fdf3e0;
+  --degrade:linear-gradient(45deg,var(--turquoise) 15%,var(--marine) 85%);
+  --filet:linear-gradient(90deg,#5ad0b6,#8cc9f0,#a89cc8);
+  --font:'Source Sans Pro',Helvetica,sans-serif; --r:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--fond);font-family:var(--font);color:var(--texte);font-size:15px;line-height:1.65}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+header{background-image:var(--degrade);color:#fff;padding:34px 0 30px;text-align:center}
+header h1{font-weight:300;font-size:1.7rem;letter-spacing:-.025em}
+header p{color:rgba(255,255,255,.8);font-size:.9rem;margin-top:4px}
+.badge-int{display:inline-block;margin-top:10px;font-size:.68rem;letter-spacing:1.4px;text-transform:uppercase;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);border-radius:var(--r);padding:3px 12px}
+main{padding:26px 0 60px}
+.carte{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:20px;margin-top:18px;position:relative;overflow:hidden}
+.carte::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background-image:var(--filet)}
+h2{font-weight:300;font-size:1.25rem;color:var(--encre);letter-spacing:-.025em;margin-bottom:10px}
+label{font-size:.85rem;font-weight:600;color:var(--encre)}
+input,select{font-family:inherit;font-size:.95rem;padding:9px 12px;border:1px solid var(--ligne);border-radius:var(--r);background:#fff;color:var(--encre)}
+input:focus,select:focus{outline:none;border-color:var(--turquoise);box-shadow:0 0 0 3px rgba(26,188,156,.18)}
+button{font-family:inherit;font-size:.92rem;font-weight:400;height:2.6em;padding:0 1.4em;border:none;border-radius:var(--r);background-image:var(--degrade);color:#fff;cursor:pointer;transition:opacity .2s}
+button:hover{opacity:.88}
+button.sec{background:none;background-color:transparent;box-shadow:inset 0 0 0 2px var(--turquoise);color:var(--encre)}
+button.sec:hover{background-color:var(--turquoise);color:#fff;opacity:1}
+.ligne-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.note{font-size:.8rem;color:var(--gris-clair);margin-top:8px}
+.erreur{color:var(--rose);font-size:.88rem;min-height:1.2em;margin-top:8px}
+.resultat-lien{margin-top:12px;background:var(--turquoise-pale);border:1px solid var(--turquoise);border-radius:var(--r);padding:12px;font-size:.9rem;word-break:break-all;display:none}
+.resultat-lien code{font-size:.95rem;color:var(--encre)}
+/* liste des évaluations */
+.stats-mois{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.pastille{font-size:.74rem;border-radius:var(--r);padding:3px 10px;background:var(--fond);border:1px solid var(--ligne);color:var(--texte)}
+details.eval{border:1px solid var(--ligne);border-radius:var(--r);margin-top:10px;background:#fff}
+details.eval summary{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:11px 14px;cursor:pointer;list-style:none;font-size:.9rem}
+details.eval summary::-webkit-details-marker{display:none}
+.niv{font-weight:600;font-size:.78rem;border-radius:var(--r);padding:2px 10px;color:#fff;white-space:nowrap}
+.niv.n15,.niv.nurgences{background:var(--rose)}
+.niv.n24h{background:var(--ambre)}
+.niv.n72h{background:var(--turquoise-dark)}
+.niv.nconsult{background:var(--marine)}
+.niv.nmt,.niv.nsuivi,.niv.nbilan,.niv.nautre{background:var(--gris-clair)}
+.ref{font-weight:600;color:var(--encre)}
+.tag-pre{font-size:.7rem;letter-spacing:.6px;text-transform:uppercase;color:var(--marine);box-shadow:inset 0 0 0 1px var(--marine);border-radius:var(--r);padding:2px 8px}
+.meta{color:var(--gris-clair);font-size:.82rem}
+.detail{border-top:1px solid var(--ligne);padding:12px 14px;font-size:.88rem}
+.detail dt{font-weight:600;color:var(--encre);margin-top:8px}
+.detail dd{margin-left:0}
+.detail ul{margin:4px 0 0 18px}
+.vide{color:var(--gris-clair);font-style:italic;margin-top:12px}
+footer{border-top:1px solid var(--ligne);padding:18px 0 30px;font-size:.78rem;color:var(--gris-clair);text-align:center}
+.maquette-bandeau{display:none;background:var(--ambre-pale);border-bottom:1px solid var(--ambre);color:#92600A;text-align:center;padding:8px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="maquette-bandeau" id="bandeauMock">MAQUETTE — données fictives, aucune connexion au serveur.</div>
+<header>
+  <div class="wrap">
+    <h1>Urgence'Rachis — Relecture</h1>
+    <p>Espace praticiens &amp; secrétariat</p>
+    <span class="badge-int">Usage interne · Données anonymes</span>
+  </div>
+</header>
+<main class="wrap">
+
+  <section class="carte" id="carteCle">
+    <h2>Accès</h2>
+    <div class="ligne-form">
+      <label for="cle">Clé d'accès</label>
+      <input id="cle" type="password" size="30" autocomplete="off">
+      <button id="btnCle">Entrer</button>
+    </div>
+    <div class="erreur" id="erreurCle"></div>
+    <p class="note">La clé n'est jamais enregistrée sur cet appareil au-delà de l'onglet en cours.</p>
+  </section>
+
+  <section class="carte" id="carteLien" hidden>
+    <h2>Générer un lien de pré-consultation</h2>
+    <p class="note" style="margin-top:0">Lien à usage patient, valable 45 jours, à envoyer par le secrétariat (SMS ou email). Le dossier reviendra étiqueté du praticien et de la référence d'évaluation.</p>
+    <div class="ligne-form">
+      <label for="praticien">Praticien</label>
+      <select id="praticien">
+        <option value="jameson">Dr Jameson</option>
+        <option value="lamerain">Dr Lamerain</option>
+        <option value="travert">Dr Travert</option>
+      </select>
+      <button id="btnLien">Générer le lien</button>
+    </div>
+    <div class="resultat-lien" id="resultatLien"></div>
+    <div class="erreur" id="erreurLien"></div>
+  </section>
+
+  <section class="carte" id="carteRelecture" hidden>
+    <h2>Évaluations du mois</h2>
+    <div class="ligne-form">
+      <label for="mois">Mois</label>
+      <input id="mois" type="month">
+      <button class="sec" id="btnCharger">Charger</button>
+    </div>
+    <div class="stats-mois" id="statsMois"></div>
+    <div id="listeEvals"></div>
+    <div class="erreur" id="erreurRelecture"></div>
+  </section>
+
+</main>
+<footer>Urgence'Rachis · page interne · les traces sont anonymes (référence, parcours de réponses, questions de l'assistant, orientation) — jamais de texte libre patient ni d'identité.</footer>
+<script>
+const MOCK=window.MOCK||null;
+const $=id=>document.getElementById(id);
+let CLE=sessionStorage.getItem("urCle")||"";
+const DICO_SIGNES={sphincter:"Troubles urinaires / anesthésie du siège",fievre:"Fièvre ou frissons",paralysie:"Paralysie complète et brutale",force:"Perte de force partielle/récente",myelo:"Maladresse mains / marche / Lhermitte",trauma:"Contexte traumatique",trauma_ancien:"Trauma haute énergie > 24 h",tassement:"Trauma faible énergie",osteo:"Terrain ostéoporotique",cancer:"Cancer < 5 ans",douleurMax:"Douleur hyperalgique résistante"};
+
+function montrer(){ $("carteCle").hidden=true; $("carteLien").hidden=false; $("carteRelecture").hidden=false; }
+
+async function verifierCle(){
+  const c=$("cle").value.trim();
+  if(!c){$("erreurCle").textContent="Saisissez la clé.";return;}
+  const r=await fetch("/api/relecture",{headers:{Authorization:"Bearer "+c}}).catch(()=>null);
+  if(r&&r.ok){CLE=c;sessionStorage.setItem("urCle",c);montrer();chargerMois(await r.json());}
+  else $("erreurCle").textContent="Clé refusée.";
+}
+
+async function genererLien(){
+  $("erreurLien").textContent="";
+  if(MOCK){afficherLien({url:"https://urgence-rachis.fr/?p=0f3a9c1d2e4b5a6f7081",praticien:$("praticien").selectedOptions[0].textContent,expire:"2026-11-02"});return;}
+  const r=await fetch("/api/lien",{method:"POST",headers:{"content-type":"application/json",Authorization:"Bearer "+CLE},body:JSON.stringify({praticien:$("praticien").value})}).catch(()=>null);
+  if(r&&r.ok) afficherLien(await r.json());
+  else $("erreurLien").textContent="Échec de la génération. Vérifiez la clé.";
+}
+function afficherLien(d){
+  const z=$("resultatLien");z.style.display="block";
+  z.innerHTML="<strong>"+d.praticien+"</strong> · expire le "+d.expire+"<br><code>"+d.url+"</code><br>";
+  const b=document.createElement("button");b.className="sec";b.style.marginTop="8px";b.textContent="Copier le lien";
+  b.onclick=async()=>{try{await navigator.clipboard.writeText(d.url);b.textContent="Copié ✓";}catch(e){}};
+  z.appendChild(b);
+}
+
+function badgeNiveau(n){const s=document.createElement("span");s.className="niv n"+(["15","urgences","24h","72h","consult","mt","suivi","bilan"].includes(n)?n:"autre");s.textContent=n||"?";return s;}
+async function chargerMois(donnees){
+  $("erreurRelecture").textContent="";$("listeEvals").innerHTML="";$("statsMois").innerHTML="";
+  let d=donnees;
+  if(!d){
+    if(MOCK)d=MOCK;
+    else{
+      const mois=$("mois").value;
+      const r=await fetch("/api/relecture"+(mois?"?mois="+mois:""),{headers:{Authorization:"Bearer "+CLE}}).catch(()=>null);
+      if(!r||!r.ok){$("erreurRelecture").textContent="Chargement impossible.";return;}
+      d=await r.json();
+    }
+  }
+  $("mois").value=d.mois;
+  const comptes={};
+  for(const t of d.traces) comptes[t.niveau||"?"]=(comptes[t.niveau||"?"]||0)+1;
+  $("statsMois").innerHTML="";
+  const total=document.createElement("span");total.className="pastille";total.innerHTML="<strong>"+d.traces.length+"</strong> évaluation(s)";
+  $("statsMois").appendChild(total);
+  for(const[n,c]of Object.entries(comptes)){const p=document.createElement("span");p.className="pastille";p.textContent=n+" : "+c;$("statsMois").appendChild(p);}
+  if(!d.traces.length){const v=document.createElement("p");v.className="vide";v.textContent="Aucune évaluation tracée ce mois-ci.";$("listeEvals").appendChild(v);return;}
+  for(const t of d.traces){
+    const det=document.createElement("details");det.className="eval";
+    const sum=document.createElement("summary");
+    sum.appendChild(badgeNiveau(t.niveau));
+    const ref=document.createElement("span");ref.className="ref";ref.textContent=t.ref||"—";sum.appendChild(ref);
+    const meta=document.createElement("span");meta.className="meta";
+    meta.textContent=(t.t||"")+" · "+(t.region||"?")+" · "+(t.sexe||"?")+(t.tranche_age!=null?(" · "+t.tranche_age+"-"+(t.tranche_age+9)+" ans"):"")+(t.motif?(" · motif "+t.motif):"")+(t.nb_messages!=null?(" · "+t.nb_messages+" messages"):"");
+    sum.appendChild(meta);
+    if(t.preconsult){const tp=document.createElement("span");tp.className="tag-pre";tp.textContent="Pré-consultation";sum.appendChild(tp);}
+    det.appendChild(sum);
+    const dv=document.createElement("div");dv.className="detail";
+    const dl=document.createElement("dl");
+    const champ=(titre,val)=>{if(val==null||val==="")return;const dt=document.createElement("dt");dt.textContent=titre;const dd=document.createElement("dd");dd.textContent=val;dl.appendChild(dt);dl.appendChild(dd);};
+    champ("Irradiation",t.irradiation);champ("Ancienneté",t.anciennete);champ("Évolution",t.evolution);
+    champ("Imagerie",t.imagerie);champ("Souhait",t.souhait);
+    if(Array.isArray(t.signes)&&t.signes.length){const dt=document.createElement("dt");dt.textContent="Signes cochés";const dd=document.createElement("dd");const ul=document.createElement("ul");for(const s of t.signes){const li=document.createElement("li");li.textContent=DICO_SIGNES[s]||s;ul.appendChild(li);}dd.appendChild(ul);dl.appendChild(dt);dl.appendChild(dd);}
+    if(Array.isArray(t.questions_ia)&&t.questions_ia.length){const dt=document.createElement("dt");dt.textContent="Questions posées par l'assistant";const dd=document.createElement("dd");const ul=document.createElement("ul");for(const q of t.questions_ia){const li=document.createElement("li");li.textContent=q;ul.appendChild(li);}dd.appendChild(ul);dl.appendChild(dt);dl.appendChild(dd);}
+    dv.appendChild(dl);det.appendChild(dv);
+    $("listeEvals").appendChild(det);
+  }
+}
+
+$("btnCle").onclick=verifierCle;
+$("cle").addEventListener("keydown",e=>{if(e.key==="Enter")verifierCle();});
+$("btnLien").onclick=genererLien;
+$("btnCharger").onclick=()=>chargerMois(null);
+if(MOCK){$("bandeauMock").style.display="block";montrer();chargerMois(MOCK);}
+else if(CLE){fetch("/api/relecture",{headers:{Authorization:"Bearer "+CLE}}).then(async r=>{if(r.ok){montrer();chargerMois(await r.json());}else sessionStorage.removeItem("urCle");}).catch(()=>{});}
+</script>
+</body>
+</html>
