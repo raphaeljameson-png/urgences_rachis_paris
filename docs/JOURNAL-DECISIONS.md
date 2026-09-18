@@ -310,6 +310,19 @@ d'emails approuvés en KV gérée par l'admin, aucun mot de passe stocké. La cl
 partagée ADMIN_KEY reste la solution v1 assumée en mono-utilisateur. S'articule
 avec le lot 3 (organisations / B2B).
 
+### Séance du 18/09/2026 (soir) — lots 1+2 + Turnstile VALIDÉS et mergés
+
+**Validation RJ (« Ok »)** : maquette de la page de relecture + textes T1-T6 et
+transparence T4 (mot à mot, tels que soumis). Périmètre T2 confirmé : pas
+d'invitation d'envoi sur les cartes n1 (15/urgences). Mergé en prod : référence
+UR-XXXXXX (PDF + trace + email), /relecture.html (relecture + générateur de
+liens), parcours pré-consultation ?p=jeton, Turnstile conditionnel, phrase de
+transparence (site + mentions légales 4.2). Version v0.9 · 18/09/2026.
+**Reste à faire par RJ pour tout allumer** : poser les secrets ADMIN_KEY,
+TURNSTILE_SITE_KEY, TURNSTILE_SECRET (widget Turnstile « Invisible » à créer
+dans le dashboard Cloudflare). Tout est mort par défaut sans eux, sauf la
+référence UR- qui est active immédiatement.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
