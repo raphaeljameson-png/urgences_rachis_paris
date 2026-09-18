@@ -291,6 +291,25 @@ MEMOIRE.md (section VEILLE CONCURRENTIELLE). Proposition lots 1-2-3
 (numérotation/relecture, pré-consultation par lien, B2B organisations) EN
 ATTENTE d'arbitrage RJ. Aucune copie de code/design — concept seulement.
 
+### Séance du 18/09/2026 (suite) — lots 1+2 codés, exigence d'authentification future
+
+**Lots 1+2 + Turnstile implémentés sur la branche** (commit 6ea678b, NON mergé) :
+référence UR-XXXXXX (PDF/trace/email), page /relecture.html (clé ADMIN_KEY,
+relecture des traces + générateur de liens de pré-consultation 45 j), parcours
+patient ?p=jeton (praticien résolu côté serveur), Turnstile conditionnel avec
+laissez-passer HMAC 2 h. Maquette artifact « Maquette Relecture » livrée ;
+textes patients T1-T6 + transparence T4 soumis. EN ATTENTE : validation RJ
+(maquette + textes) avant merge, puis pose des secrets ADMIN_KEY /
+TURNSTILE_SITE_KEY / TURNSTILE_SECRET.
+
+**Exigence RJ (18/09) — authentification de la page praticien, version cible** :
+« connexion avec compte Google et validée par l'admin (moi) » — à implémenter
+quand l'équipe dépassera le mono-utilisateur. Schéma prévu : Sign in with Google
+(jeton d'identité vérifié par le worker contre les certificats Google), liste
+d'emails approuvés en KV gérée par l'admin, aucun mot de passe stocké. La clé
+partagée ADMIN_KEY reste la solution v1 assumée en mono-utilisateur. S'articule
+avec le lot 3 (organisations / B2B).
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
