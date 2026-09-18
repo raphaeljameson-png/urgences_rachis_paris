@@ -57,6 +57,12 @@
   PJ OK, Reply-To OK. Pièges résolus : b64 UTF-8 (jamais btoa brut) ; invalid_grant =
   re-générer le refresh token via oauthplayground avec ses propres identifiants.
 - Domaine urgence-rachis.fr : PAS acheté. STATS_KEY : pas posé.
+- **Atout RJ (18/09/2026) : hébergement certifié HDS souscrit chez SCALINGO**
+  (pour un autre projet) — mobilisable pour Urgence'Rachis si un stockage de
+  données de santé identifiantes/pseudonymisées devient nécessaire (ex. archivage
+  des conversations avec consentement). Lève le mur technique HDS identifié le
+  05/09 ; les obligations RGPD (base légale, AIPD, mentions, durées) restent
+  entières — voir journal 05/09 et section veille Soleyne.
 
 ### MÉTHODE DE PUSH (obligatoire)
 
