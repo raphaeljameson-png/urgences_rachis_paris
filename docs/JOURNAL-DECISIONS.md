@@ -323,6 +323,27 @@ TURNSTILE_SITE_KEY, TURNSTILE_SECRET (widget Turnstile « Invisible » à créer
 dans le dashboard Cloudflare). Tout est mort par défaut sans eux, sauf la
 référence UR- qui est active immédiatement.
 
+### Séance du 18/09/2026 (fin) — roadmap validée + idée RJ : régionalisation payante
+
+**Roadmap validée par RJ (« Oui »).** Nouvelle orientation exprimée : demander au
+patient son CODE POSTAL pour régionaliser les demandes, et faire payer les
+utilisateurs (praticiens) inscrits. Consigné comme **lot 5**, avec deux modèles
+à distinguer AVANT tout code :
+- **Modèle A — marque blanche (recommandé)** : chaque équipe inscrite a son lien
+  /d/organisation (lot 3), fait le triage pour SES propres patients et paie la
+  licence de l'outil (structure ad hoc — voie licite identifiée dans la note
+  déontologique de juillet). Le site EFR reste celui de l'EFR. Modèle Soleyne.
+- **Modèle B — annuaire/routage national** : un site unique capte des patients
+  et les répartit vers les praticiens ABONNÉS selon le code postal. RISQUE
+  DÉONTOLOGIQUE MAJEUR : adressage de patients contre rémunération ≈ compérage
+  (art. R.4127-23/24 CSP), partage d'honoraires, publicité. À NE PAS construire
+  sans avis avocat/CDOM préalable — réveille le dossier dormant du 08/08.
+**Code postal** : techniquement simple (question facultative). Vie privée : dans
+la trace anonyme, ne stocker que le DÉPARTEMENT (2 chiffres) — le code postal
+complet combiné à âge/sexe/pathologie devient ré-identifiant en petite commune ;
+le CP complet ne voyagerait que dans la demande nominative (email), déjà
+consentie. Aucune implémentation avant arbitrage du modèle A/B par RJ.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.
