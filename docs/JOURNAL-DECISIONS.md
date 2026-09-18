@@ -282,6 +282,15 @@ soumettre) ; (3) stockage des conversations complètes : DÉCONSEILLÉ en l'éta
 (promesse « ni texte libre » publiée + données potentiellement identifiantes →
 dossier HDS dormant) — alternative retenue à discuter : numérotation + email.
 
+### Séance du 18/09/2026 — veille concurrentielle Soleyne AI
+
+Sur demande RJ, analyse de soleyne.com (agent de pré-consultation du rachis,
+propriétaire masqué, seul déploiement visible : Dr Xavier Castel, Centre
+Orthopédique Santy, Lyon). Synthèse complète et processus observé consignés au
+MEMOIRE.md (section VEILLE CONCURRENTIELLE). Proposition lots 1-2-3
+(numérotation/relecture, pré-consultation par lien, B2B organisations) EN
+ATTENTE d'arbitrage RJ. Aucune copie de code/design — concept seulement.
+
 ## 2. Points ouverts
 
 1. **Textes patients à valider mot à mot** : cartes `radiculalgie_filiere`, `filiere_possible`, cancer durcie (« oncologue ou MT pour IRM rapide » + filet transversal), suivi (« bienvenu, sans urgence, peu fréquemment chirurgical, MT prescrit le bilan »), filet sujet âgé.

@@ -286,6 +286,38 @@ couvrant tout le rachis n'existe.** Briques validées :
 
 ---
 
+## VEILLE CONCURRENTIELLE — SOLEYNE AI (observé le 18/09/2026)
+
+- **soleyne.com** : « Agent de consultation du rachis » — IA qui interroge les
+  patients AVANT leur rendez-vous pour que « chaque consultation de chirurgie du
+  rachis démarre avec un dossier complet ». Produit réel en service, pas une vitrine.
+- **Propriétaire masqué** : domaine déposé le 14/03/2026 (Amazon Registrar,
+  titulaire anonymisé), hébergement AWS, AUCUNE mention légale, aucune société
+  au RCS sous ce nom, contact unique admin@soleyne.com.
+- **Seul déploiement visible** : /d/santy/castel → organisation « Santy »,
+  praticien « Castel » = **Dr Xavier Castel, neurochirurgien du rachis au Centre
+  Orthopédique Santy (Lyon 8e, Ramsay Santé)**, arrivé en 2023, anime le staff
+  rachis, porte l'endoscopie. Site probablement développé par lui ou pour lui
+  (non confirmé formellement).
+- **Processus observé** (pages publiques uniquement) : SPA Vue.js ; routes
+  /d/:organization/ (page d'accueil par déploiement, API publique renvoyant
+  doctor_name/organization_name + jeton de formulaire + clé Turnstile anti-robot),
+  /questionnaire/:token/ (questionnaire patient par lien à usage unique),
+  /dashboard/ + /dashboard/patient/:token/ (espace praticien), /login, bilingue
+  FR/EN, référence CNIL dans le code.
+- **Positionnement vs Urgence'Rachis** : Soleyne prépare la consultation de
+  patients DÉJÀ captés (pré-consultation) ; nous trions l'urgence et captons en
+  amont. Complémentaire plus que concurrent frontal — mais preuve que d'autres
+  chirurgiens du rachis français investissent le créneau en 2026 → consolider
+  l'avance (calibration 100 vignettes, doctrine validée, REX réels) et accélérer
+  la validation multi-praticiens + publication pour dater l'antériorité.
+- **Règle** : ne JAMAIS copier code, textes ou design de Soleyne ; le concept
+  (lien de pré-consultation par jeton + espace praticien) est libre et déclinable
+  dans notre pile. Proposition en attente d'arbitrage RJ : lot 1 (numérotation +
+  page de relecture), lot 2 (pré-consultation par lien rattaché à un praticien,
+  sans stockage nominatif nouveau — rapport par la chaîne email), lot 3 (routes
+  par organisation = piste licence B2B, après v1.0).
+
 ## DÉONTOLOGIE — MONÉTISATION
 
 **Publicité de tiers = très risqué.** Article 13 (pas de profit sur une action
